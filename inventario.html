@@ -47,6 +47,27 @@
             border-right: 1px solid var(--medium-gray);
             z-index: 1000;
             overflow-y: auto;
+            transform: translateX(-280px);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
+        }
+        
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
         }
         
         .brand-header {
@@ -126,8 +147,21 @@
         }
         
         .main-content {
-            margin-left: 280px;
+            margin-left: 0;
             padding: 30px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+        
+        @media (min-width: 992px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 280px;
+            }
+            .sidebar-overlay {
+                display: none !important;
+            }
         }
         
         .page-header {
@@ -416,9 +450,38 @@
             background-color: rgba(255, 193, 7, 0.1);
             color: #856404;
         }
+        
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 10px;
+            margin-right: 15px;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+        }
+        
+        @media (max-width: 991px) {
+            .hamburger-btn {
+                display: block;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Overlay para menú móvil -->
+    <div class="sidebar-overlay"></div>
+    
+    <!-- Botón hamburguesa para móvil -->
+    <button class="hamburger-btn">
+        <i class="fas fa-bars"></i>
+    </button>
+    
     <!-- Sidebar Navigation -->
     <div class="sidebar">
         <div class="brand-header">
@@ -457,9 +520,9 @@
         <!-- User Profile -->
         <div class="user-profile">
             <a href="#" class="nav-link">
-                <i class="fas fa-user-circle"></i> María González
+                <i class="fas fa-user-circle"></i> Leslie Lugo
             </a>
-            <a href="#" class="nav-link">
+            <a href="#" class="nav-link" id="logout-btn">
                 <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
             </a>
         </div>
@@ -999,4 +1062,54 @@
                         'rgba(243, 156, 18, 1)',
                         'rgba(39, 174, 96, 1)'
                     ],
-                   
+                                       borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Toggle sidebar on mobile
+        document.querySelector('.hamburger-btn').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        });
+        
+        // Close sidebar when clicking on overlay
+        document.querySelector('.sidebar-overlay').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.remove('active');
+            this.classList.remove('active');
+        });
+        
+        // Close sidebar when clicking on menu items
+        document.querySelectorAll('.sidebar .nav-link').forEach(function(link) {
+            link.addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.remove('active');
+                document.querySelector('.sidebar-overlay').classList.remove('active');
+            });
+        });
+        
+        // Logout simulation
+        document.getElementById('logout-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            if(confirm('¿Está seguro que desea cerrar sesión?')) {
+                alert('Sesión cerrada. Redirigiendo al login...');
+                // In a real application, redirect to login page
+                // window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>
