@@ -250,10 +250,10 @@ $currentUser = $userModel->getCurrentUser();
             <a href="<?php echo BASE_URL; ?>/optimizacion-logistica.php" class="nav-link">
                 <i class="fas fa-route"></i> Logística
             </a>
-            <a href="<?php echo BASE_URL; ?>/experiencia-cliente.html" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/experiencia-cliente.php" class="nav-link">
                 <i class="fas fa-users"></i> Clientes
             </a>
-            <a href="<?php echo BASE_URL; ?>/analitica-reportes.html" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/analitica-reportes.php" class="nav-link">
                 <i class="fas fa-chart-bar"></i> Analítica
             </a>
         </div>

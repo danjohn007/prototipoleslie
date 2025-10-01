@@ -547,10 +547,10 @@ unset($_SESSION['success'], $_SESSION['error'], $_SESSION['errors']);
             <a href="registrar-retorno.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Registrar Retorno
             </a>
-            <a href="experiencia-cliente.html" class="nav-link">
+            <a href="experiencia-cliente.php" class="nav-link">
                 <i class="fas fa-smile"></i> Experiencia del Cliente
             </a>
-            <a href="analitica-reportes.html" class="nav-link">
+            <a href="analitica-reportes.php" class="nav-link">
                 <i class="fas fa-chart-bar"></i> Analítica y Reportes
             </a>
             <a href="gestion-clientes.html" class="nav-link">

@@ -537,38 +537,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <i class="fas fa-clipboard-list"></i> Registro de Producción
                 <span class="nav-badge">3</span>
             </a>
-            <a href="pedidos.html" class="nav-link">
+            <a href="pedidos.php" class="nav-link">
                 <i class="fas fa-shopping-cart"></i> Gestión de Pedidos
                 <span class="nav-badge">47</span>
             </a>
-            <a href="nuevo-pedido.html" class="nav-link" style="padding-left: 40px;">
+            <a href="nuevo-pedido.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nuevo Pedido
             </a>
-            <a href="ventas-punto.html" class="nav-link">
+            <a href="ventas-punto.php" class="nav-link">
                 <i class="fas fa-store"></i> Ventas en Punto
                 <span class="nav-badge">12</span>
             </a>
-            <a href="optimizacion-logistica.html" class="nav-link">
+            <a href="optimizacion-logistica.php" class="nav-link">
                 <i class="fas fa-route"></i> Optimización Logística
                 <span class="nav-badge">5</span>
             </a>
-            <a href="nueva-ruta.html" class="nav-link" style="padding-left: 40px;">
+            <a href="nueva-ruta.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nueva Ruta
             </a>
-            <a href="control-retornos.html" class="nav-link">
+            <a href="control-retornos.php" class="nav-link">
                 <i class="fas fa-undo-alt"></i> Control de Retornos
                 <span class="nav-badge">7</span>
             </a>
-            <a href="registrar-retorno.html" class="nav-link" style="padding-left: 40px;">
+            <a href="registrar-retorno.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Registrar Retorno
             </a>
-            <a href="experiencia-cliente.html" class="nav-link">
+            <a href="experiencia-cliente.php" class="nav-link">
                 <i class="fas fa-smile"></i> Experiencia del Cliente
             </a>
             <a href="enviar-encuesta.html" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-envelope"></i> Enviar Encuesta
             </a>
-            <a href="analitica-reportes.html" class="nav-link">
+            <a href="analitica-reportes.php" class="nav-link">
                 <i class="fas fa-chart-bar"></i> Analítica y Reportes
             </a>
             <a href="nuevo-reporte.html" class="nav-link" style="padding-left: 40px;">
