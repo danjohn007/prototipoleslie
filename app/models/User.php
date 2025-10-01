@@ -136,4 +136,15 @@ class User {
         $sql = "UPDATE usuarios SET password = ? WHERE id = ?";
         return $this->db->execute($sql, [$hashedPassword, $userId]);
     }
+    
+    /**
+     * Obtiene usuarios por rol
+     */
+    public function getByRole($rol) {
+        $sql = "SELECT id, nombre, email, rol, activo 
+                FROM usuarios 
+                WHERE rol = ? AND activo = 1
+                ORDER BY nombre ASC";
+        return $this->db->query($sql, [$rol]);
+    }
 }

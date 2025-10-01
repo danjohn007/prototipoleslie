@@ -1,0 +1,1193 @@
+<?php
+/**
+ * Ventas en Punto (POS)
+ * Requiere autenticación
+ */
+
+// Cargar configuración
+require_once __DIR__ . '/app/config/config.php';
+
+// Handle logout
+if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    $authController = new AuthController();
+    $authController->logout();
+}
+
+// Verificar autenticación
+$authController = new AuthController();
+$authController->checkAuth();
+
+// Obtener usuario actual
+$userModel = new User();
+$currentUser = $userModel->getCurrentUser();
+
+// Procesar venta si se envió
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $saleController = new SaleController();
+    $saleController->processQuickSale();
+    exit;
+}
+
+// Obtener datos de ventas
+$saleModel = new Sale();
+$sales = $saleModel->getRecent(20);
+$stats = $saleModel->getStats();
+$topProducts = $saleModel->getTopProducts(5);
+
+$productModel = new Product();
+$products = $productModel->getAll();
+
+$clientModel = new Client();
+$clients = $clientModel->getAll();
+
+// Mensajes de sesión
+$success = $_SESSION['success'] ?? null;
+$error = $_SESSION['error'] ?? null;
+$errors = $_SESSION['errors'] ?? [];
+unset($_SESSION['success'], $_SESSION['error'], $_SESSION['errors']);
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventas en Punto - <?php echo APP_NAME; ?></title>
+    <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #e74c3c;
+            --environment: #27ae60;
+            --human-rights: #3498db;
+            --equity: #9b59b6;
+            --education: #f39c12;
+            --energy: #e67e22;
+            --transport: #1abc9c;
+            --water: #2980b9;
+            --government: #34495e;
+            --security: #c0392b;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 400;
+            color: #333;
+            background-color: var(--light-gray);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .sidebar {
+            background-color: white;
+            height: 100vh;
+            width: 280px;
+            position: fixed;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            border-right: 1px solid var(--medium-gray);
+            z-index: 1000;
+            overflow-y: auto;
+            transform: translateX(-280px);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
+        }
+        
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        .brand-header {
+            padding: 25px;
+            border-bottom: 1px solid var(--medium-gray);
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 100;
+        }
+        
+        .brand-title {
+            font-size: 22px;
+            font-weight: 400;
+            color: var(--primary);
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .brand-subtitle {
+            font-size: 12px;
+            color: var(--dark-gray);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        
+        .nav-section {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .nav-section-title {
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0 25px 10px 25px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 25px;
+            color: var(--dark-gray);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .nav-link:hover {
+            background-color: var(--light-gray);
+            color: var(--primary);
+        }
+        
+        .nav-link.active {
+            color: var(--primary);
+            border-left: 3px solid var(--secondary);
+            background-color: rgba(44, 62, 80, 0.05);
+        }
+        
+        .nav-link i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        .nav-badge {
+            position: absolute;
+            right: 25px;
+            background-color: var(--secondary);
+            color: white;
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-size: 10px;
+        }
+        
+        .main-content {
+            margin-left: 0;
+            padding: 30px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+        
+        @media (min-width: 992px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 280px;
+            }
+            .sidebar-overlay {
+                display: none !important;
+            }
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .page-title {
+            font-size: 24px;
+            font-weight: 400;
+            color: var(--primary);
+            margin: 0;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 24px;
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--medium-gray);
+            padding: 16px 20px;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            margin: 0;
+            color: var(--primary);
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+        
+        .kpi-card {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 500;
+            margin: 10px 0;
+        }
+        
+        .kpi-label {
+            font-size: 12px;
+            color: var(--dark-gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .kpi-trend {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .kpi-trend.up {
+            color: var(--success);
+        }
+        
+        .kpi-trend.down {
+            color: var(--danger);
+        }
+        
+        .user-table {
+            width: 100%;
+            font-size: 14px;
+        }
+        
+        .user-table th {
+            text-align: left;
+            padding: 10px;
+            background-color: var(--light-gray);
+            font-weight: 500;
+            color: var(--dark-gray);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        
+        .user-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .user-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .badge-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .status-completed {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: #155724;
+        }
+        
+        .status-pending {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #856404;
+        }
+        
+        .status-cancelled {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: #721c24;
+        }
+        
+        .product-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            margin-right: 8px;
+            color: white;
+            font-size: 12px;
+        }
+        
+        .product-cheese {
+            background-color: #e67e22;
+        }
+        
+        .product-yogurt {
+            background-color: #3498db;
+        }
+        
+        .product-cream {
+            background-color: #9b59b6;
+        }
+        
+        .product-butter {
+            background-color: #f39c12;
+        }
+        
+        .user-profile {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            border-top: 1px solid var(--medium-gray);
+            padding: 15px 0;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-success {
+            background-color: var(--environment);
+            border-color: var(--environment);
+        }
+        
+        .btn-warning {
+            background-color: var(--education);
+            border-color: var(--education);
+        }
+        
+        .btn-info {
+            background-color: var(--human-rights);
+            border-color: var(--human-rights);
+        }
+        
+        .payment-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .payment-cash {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #155724;
+        }
+        
+        .payment-card {
+            background-color: rgba(0, 123, 255, 0.1);
+            color: #004085;
+        }
+        
+        .payment-transfer {
+            background-color: rgba(111, 66, 193, 0.1);
+            color: #542c85;
+        }
+        
+        .sale-item {
+            border: 1px solid var(--medium-gray);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        
+        .sale-item:hover {
+            border-color: var(--primary);
+            background-color: rgba(44, 62, 80, 0.02);
+        }
+        
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .product-card {
+            border: 1px solid var(--medium-gray);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .product-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .product-card.selected {
+            border-color: var(--environment);
+            background-color: rgba(39, 174, 96, 0.05);
+        }
+        
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 4px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .quantity-input {
+            width: 50px;
+            text-align: center;
+            border: 1px solid var(--medium-gray);
+            border-radius: 4px;
+            padding: 5px;
+        }
+        
+        .cart-summary {
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            padding: 20px;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .payment-method {
+            border: 2px solid var(--medium-gray);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .payment-method.selected {
+            border-color: var(--environment);
+            background-color: rgba(39, 174, 96, 0.05);
+        }
+        
+        .qr-scanner {
+            border: 2px dashed var(--medium-gray);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background-color: var(--light-gray);
+            margin: 20px 0;
+        }
+        
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 10px;
+            margin-right: 15px;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+        }
+        
+        @media (max-width: 991px) {
+            .hamburger-btn {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Overlay para menú móvil -->
+    <div class="sidebar-overlay"></div>
+    
+    <!-- Botón hamburguesa para móvil -->
+    <button class="hamburger-btn">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="brand-header">
+            <div class="brand-title">QUESOS LESLIE</div>
+            <div class="brand-subtitle">VENTAS</div>
+        </div>
+        
+                <!-- MÓDULOS DEL SISTEMA -->
+        <div class="nav-section">
+            <div class="nav-section-title">MÓDULOS</div>
+            <a href="dashboard.html" class="nav-link">
+                <i class="fas fa-chart-pie"></i> Dashboard
+            </a>
+            <a href="produccion.html" class="nav-link">
+                <i class="fas fa-industry"></i> Producción
+                <span class="nav-badge">15</span>
+            </a>
+            <a href="nuevo-lote.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Lote
+            </a>
+            <a href="inventario.html" class="nav-link">
+                <i class="fas fa-boxes"></i> Gestión de Inventario
+                <span class="nav-badge">8</span>
+            </a>
+            <a href="nuevo-producto.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Producto
+            </a>
+            <a href="registro-produccion.html" class="nav-link">
+                <i class="fas fa-clipboard-list"></i> Registro de Producción
+                <span class="nav-badge">3</span>
+            </a>
+            <a href="pedidos.html" class="nav-link">
+                <i class="fas fa-shopping-cart"></i> Gestión de Pedidos
+                <span class="nav-badge">47</span>
+            </a>
+            <a href="nuevo-pedido.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Pedido
+            </a>
+            <a href="ventas-punto.html" class="nav-link">
+                <i class="fas fa-store"></i> Ventas en Punto
+                <span class="nav-badge">12</span>
+            </a>
+            <a href="optimizacion-logistica.html" class="nav-link">
+                <i class="fas fa-route"></i> Optimización Logística
+                <span class="nav-badge">5</span>
+            </a>
+            <a href="nueva-ruta.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nueva Ruta
+            </a>
+            <a href="control-retornos.html" class="nav-link">
+                <i class="fas fa-undo-alt"></i> Control de Retornos
+                <span class="nav-badge">7</span>
+            </a>
+            <a href="registrar-retorno.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Registrar Retorno
+            </a>
+            <a href="experiencia-cliente.html" class="nav-link">
+                <i class="fas fa-smile"></i> Experiencia del Cliente
+            </a>
+            <a href="enviar-encuesta.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-envelope"></i> Enviar Encuesta
+            </a>
+            <a href="analitica-reportes.html" class="nav-link">
+                <i class="fas fa-chart-bar"></i> Analítica y Reportes
+            </a>
+            <a href="nuevo-reporte.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Reporte
+            </a>
+            <a href="gestion-clientes.html" class="nav-link">
+                <i class="fas fa-users"></i> Gestión de Clientes
+                <span class="nav-badge">234</span>
+            </a>
+            <a href="nuevo-cliente.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Cliente
+            </a>
+            <a href="administracion-financiera.html" class="nav-link">
+                <i class="fas fa-dollar-sign"></i> Administración Financiera
+            </a>
+            <a href="nueva-transaccion.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nueva Transacción
+            </a>
+        </div>
+        
+        <!-- User Profile -->
+        <div class="user-profile">
+            <a href="#" class="nav-link">
+                <i class="fas fa-user-circle"></i> Leslie Lugo
+            </a>
+            <a href="#" class="nav-link" id="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Ventas en Punto</h1>
+            <div>
+                <button class="btn btn-primary me-2">
+                    <i class="fas fa-sync-alt"></i> Sincronizar
+                </button>
+                <button class="btn btn-success">
+                    <i class="fas fa-file-export"></i> Reporte Diario
+                </button>
+            </div>
+        </div>
+        
+        <!-- KPI Cards -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Ventas Hoy</div>
+                    <div class="kpi-value" style="color: var(--environment);">$8,450</div>
+                    <div class="kpi-trend up">
+                        <i class="fas fa-arrow-up"></i> 18% vs ayer
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Transacciones</div>
+                    <div class="kpi-value" style="color: var(--human-rights);">24</div>
+                    <div class="kpi-trend up">
+                        <i class="fas fa-arrow-up"></i> 14% vs ayer
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Ticket Promedio</div>
+                    <div class="kpi-value" style="color: var(--equity);">$352</div>
+                    <div class="kpi-trend up">
+                        <i class="fas fa-arrow-up"></i> 8% vs ayer
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Clientes Atendidos</div>
+                    <div class="kpi-value" style="color: var(--education);">18</div>
+                    <div class="kpi-trend up">
+                        <i class="fas fa-arrow-up"></i> 12% vs ayer
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nueva Venta -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Nueva Venta</div>
+                        <button class="btn btn-sm btn-success">
+                            <i class="fas fa-bolt"></i> Venta Rápida
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <!-- Búsqueda de Cliente -->
+                        <div class="mb-4">
+                            <label class="form-label">Cliente</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Buscar cliente...">
+                                <button class="btn btn-outline-secondary" type="button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                <button class="btn btn-primary" type="button">
+                                    <i class="fas fa-plus"></i> Nuevo
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Productos -->
+                        <div class="mb-4">
+                            <label class="form-label">Productos Disponibles</label>
+                            <div class="product-grid">
+                                <div class="product-card selected">
+                                    <div class="product-icon product-cheese">
+                                        <i class="fas fa-cheese"></i>
+                                    </div>
+                                    <h6>Queso Gouda</h6>
+                                    <div class="text-muted small">$125/kg</div>
+                                    <div class="quantity-controls">
+                                        <button class="quantity-btn">-</button>
+                                        <input type="text" class="quantity-input" value="2">
+                                        <button class="quantity-btn">+</button>
+                                    </div>
+                                </div>
+                                <div class="product-card">
+                                    <div class="product-icon product-cheese">
+                                        <i class="fas fa-cheese"></i>
+                                    </div>
+                                    <h6>Queso Manchego</h6>
+                                    <div class="text-muted small">$110/kg</div>
+                                    <div class="quantity-controls">
+                                        <button class="quantity-btn">-</button>
+                                        <input type="text" class="quantity-input" value="0">
+                                        <button class="quantity-btn">+</button>
+                                    </div>
+                                </div>
+                                <div class="product-card">
+                                    <div class="product-icon product-yogurt">
+                                        <i class="fas fa-wine-bottle"></i>
+                                    </div>
+                                    <h6>Yogurt Natural</h6>
+                                    <div class="text-muted small">$28/kg</div>
+                                    <div class="quantity-controls">
+                                        <button class="quantity-btn">-</button>
+                                        <input type="text" class="quantity-input" value="0">
+                                        <button class="quantity-btn">+</button>
+                                    </div>
+                                </div>
+                                <div class="product-card">
+                                    <div class="product-icon product-cream">
+                                        <i class="fas fa-wine-bottle"></i>
+                                    </div>
+                                    <h6>Crema Fresca</h6>
+                                    <div class="text-muted small">$45/kg</div>
+                                    <div class="quantity-controls">
+                                        <button class="quantity-btn">-</button>
+                                        <input type="text" class="quantity-input" value="0">
+                                        <button class="quantity-btn">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Carrito de Compras -->
+                        <div class="mb-4">
+                            <label class="form-label">Carrito de Compra</label>
+                            <div class="sale-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Queso Gouda</strong>
+                                        <div class="text-muted small">2 kg × $125.00</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <strong>$250.00</strong>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="sale-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Yogurt Natural</strong>
+                                        <div class="text-muted small">3 kg × $28.00</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <strong>$84.00</strong>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <!-- Resumen de Venta -->
+                <div class="card cart-summary">
+                    <div class="card-header">
+                        <div class="card-title">Resumen de Venta</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Subtotal:</span>
+                                <span>$334.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>IVA (16%):</span>
+                                <span>$53.44</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between mb-3">
+                                <strong>Total:</strong>
+                                <strong>$387.44</strong>
+                            </div>
+                        </div>
+
+                        <!-- Métodos de Pago -->
+                        <div class="mb-3">
+                            <label class="form-label">Método de Pago</label>
+                            <div class="payment-methods">
+                                <div class="payment-method selected">
+                                    <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
+                                    <div>Efectivo</div>
+                                </div>
+                                <div class="payment-method">
+                                    <i class="fas fa-credit-card fa-2x mb-2"></i>
+                                    <div>Tarjeta</div>
+                                </div>
+                                <div class="payment-method">
+                                    <i class="fas fa-mobile-alt fa-2x mb-2"></i>
+                                    <div>Transferencia</div>
+                                </div>
+                                <div class="payment-method">
+                                    <i class="fab fa-paypal fa-2x mb-2"></i>
+                                    <div>PayPal</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Validación QR -->
+                        <div class="mb-3">
+                            <label class="form-label">Validación de Venta</label>
+                            <div class="qr-scanner">
+                                <i class="fas fa-qrcode fa-3x text-muted mb-3"></i>
+                                <div>Escanear código QR para validar</div>
+                                <small class="text-muted">O usar validación por WhatsApp</small>
+                            </div>
+                        </div>
+
+                        <!-- Botones de Acción -->
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success btn-lg">
+                                <i class="fas fa-check-circle"></i> Confirmar Venta
+                            </button>
+                            <button class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ventas Recientes -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Ventas Recientes de Hoy</div>
+                        <button class="btn btn-sm btn-primary">
+                            <i class="fas fa-redo"></i> Actualizar
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Venta ID</th>
+                                    <th>Cliente</th>
+                                    <th>Productos</th>
+                                    <th>Método Pago</th>
+                                    <th>Total</th>
+                                    <th>Hora</th>
+                                    <th>Vendedor</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#V-231101</td>
+                                    <td>Cliente Ocasional</td>
+                                    <td>
+                                        <span class="product-icon product-cheese"><i class="fas fa-cheese"></i></span> Gouda (2kg)<br>
+                                        <span class="product-icon product-butter"><i class="fas fa-cube"></i></span> Mantequilla (1kg)
+                                    </td>
+                                    <td><span class="payment-badge payment-cash">Efectivo</span></td>
+                                    <td>$387.44</td>
+                                    <td>09:15 AM</td>
+                                    <td>Ana Pérez</td>
+                                    <td><span class="badge-status status-completed">Completada</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info me-1">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning">
+                                            <i class="fas fa-receipt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#V-231102</td>
+                                    <td>Restaurante El Patio</td>
+                                    <td>
+                                        <span class="product-icon product-cheese"><i class="fas fa-cheese"></i></span> Manchego (5kg)<br>
+                                        <span class="product-icon product-yogurt"><i class="fas fa-wine-bottle"></i></span> Yogurt (4kg)
+                                    </td>
+                                    <td><span class="payment-badge payment-transfer">Transferencia</span></td>
+                                    <td>$862.00</td>
+                                    <td>10:30 AM</td>
+                                    <td>Luis Gómez</td>
+                                    <td><span class="badge-status status-completed">Completada</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info me-1">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning">
+                                            <i class="fas fa-receipt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#V-231103</td>
+                                    <td>Doña María</td>
+                                    <td>
+                                        <span class="product-icon product-cream"><i class="fas fa-wine-bottle"></i></span> Crema (2kg)<br>
+                                        <span class="product-icon product-butter"><i class="fas fa-cube"></i></span> Mantequilla (2kg)
+                                    </td>
+                                    <td><span class="payment-badge payment-card">Tarjeta</span></td>
+                                    <td>$190.00</td>
+                                    <td>11:45 AM</td>
+                                    <td>Ana Pérez</td>
+                                    <td><span class="badge-status status-pending">Validando</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info me-1">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-success">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#V-231104</td>
+                                    <td>Cafetería Central</td>
+                                    <td>
+                                        <span class="product-icon product-yogurt"><i class="fas fa-wine-bottle"></i></span> Yogurt (6kg)<br>
+                                        <span class="product-icon product-cream"><i class="fas fa-wine-bottle"></i></span> Crema (3kg)
+                                    </td>
+                                    <td><span class="payment-badge payment-cash">Efectivo</span></td>
+                                    <td>$318.00</td>
+                                    <td>01:20 PM</td>
+                                    <td>Carlos Díaz</td>
+                                    <td><span class="badge-status status-completed">Completada</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info me-1">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning">
+                                            <i class="fas fa-receipt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Métricas de Ventas -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Ventas por Método de Pago</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="paymentMethodsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Productos Más Vendidos Hoy</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="topProductsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script>
+        // Payment Methods Chart
+        const paymentMethodsCtx = document.getElementById('paymentMethodsChart').getContext('2d');
+        const paymentMethodsChart = new Chart(paymentMethodsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Efectivo', 'Tarjeta', 'Transferencia', 'PayPal'],
+                datasets: [{
+                    data: [55, 25, 15, 5],
+                    backgroundColor: [
+                        '#28a745',
+                        '#007bff',
+                        '#6f42c1',
+                        '#00457c'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.raw + '%';
+                            }
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+
+        // Top Products Chart
+        const topProductsCtx = document.getElementById('topProductsChart').getContext('2d');
+        const topProductsChart = new Chart(topProductsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Queso Gouda', 'Queso Manchego', 'Yogurt Natural', 'Crema Fresca', 'Mantequilla'],
+                datasets: [{
+                    label: 'Ventas (kg)',
+                    data: [45, 32, 28, 18, 15],
+                    backgroundColor: [
+                        'rgba(230, 126, 34, 0.7)',
+                        'rgba(52, 152, 219, 0.7)',
+                        'rgba(155, 89, 182, 0.7)',
+                        'rgba(243, 156, 18, 0.7)',
+                        'rgba(39, 174, 96, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(230, 126, 34, 1)',
+                        'rgba(52, 152, 219, 1)',
+                        'rgba(155, 89, 182, 1)',
+                        'rgba(243, 156, 18, 1)',
+                        'rgba(39, 174, 96, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value + ' kg';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Product selection functionality
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', function() {
+                this.classList.toggle('selected');
+            });
+        });
+
+        // Payment method selection
+        document.querySelectorAll('.payment-method').forEach(method => {
+            method.addEventListener('click', function() {
+                document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // Quantity controls
+        document.querySelectorAll('.quantity-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const input = this.parentElement.querySelector('.quantity-input');
+                let value = parseInt(input.value);
+                
+                if (this.textContent === '+') {
+                    value++;
+                } else if (this.textContent === '-' && value > 0) {
+                    value--;
+                }
+                
+                input.value = value;
+            });
+        });
+        
+        // Toggle sidebar on mobile
+        document.querySelector('.hamburger-btn').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        });
+        
+        // Close sidebar when clicking on overlay
+        document.querySelector('.sidebar-overlay').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.remove('active');
+            this.classList.remove('active');
+        });
+        
+        // Close sidebar when clicking on menu items
+        document.querySelectorAll('.sidebar .nav-link').forEach(function(link) {
+            link.addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.remove('active');
+                document.querySelector('.sidebar-overlay').classList.remove('active');
+            });
+        });
+        
+        // Logout simulation
+        document.getElementById('logout-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            if(confirm('¿Está seguro que desea cerrar sesión?')) {
+                alert('Sesión cerrada. Redirigiendo al login...');
+                // In a real application, redirect to login page
+                // window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>

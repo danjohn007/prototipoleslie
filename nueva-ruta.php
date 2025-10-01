@@ -1,0 +1,693 @@
+<?php
+/**
+ * Nueva Ruta
+ * Formulario para crear una nueva ruta de entrega
+ */
+
+// Cargar configuración
+require_once __DIR__ . '/app/config/config.php';
+
+// Handle logout
+if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    $authController = new AuthController();
+    $authController->logout();
+}
+
+// Verificar autenticación
+$authController = new AuthController();
+$authController->checkAuth();
+
+// Obtener usuario actual
+$userModel = new User();
+$currentUser = $userModel->getCurrentUser();
+
+// Procesar formulario si se envió
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $routeController = new RouteController();
+    $routeController->createRoute();
+    exit;
+}
+
+// Obtener datos para el formulario
+$drivers = $userModel->getByRole('logistica');
+if (empty($drivers)) {
+    // Si no hay conductores específicos, obtener todos los usuarios activos
+    $drivers = $userModel->getAll();
+}
+
+$orderModel = new Order();
+$pendingOrders = $orderModel->getByStatus('confirmado');
+
+// Mensajes de sesión
+$error = $_SESSION['error'] ?? null;
+$errors = $_SESSION['errors'] ?? [];
+unset($_SESSION['error'], $_SESSION['errors']);
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Ruta - <?php echo APP_NAME; ?></title>
+    <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #e74c3c;
+            --environment: #27ae60;
+            --human-rights: #3498db;
+            --equity: #9b59b6;
+            --education: #f39c12;
+            --energy: #e67e22;
+            --transport: #1abc9c;
+            --water: #2980b9;
+            --government: #34495e;
+            --security: #c0392b;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 400;
+            color: #333;
+            background-color: var(--light-gray);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .sidebar {
+            background-color: white;
+            height: 100vh;
+            width: 280px;
+            position: fixed;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            border-right: 1px solid var(--medium-gray);
+            z-index: 1000;
+            overflow-y: auto;
+            transform: translateX(-280px);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
+        }
+        
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        .brand-header {
+            padding: 25px;
+            border-bottom: 1px solid var(--medium-gray);
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 100;
+        }
+        
+        .brand-title {
+            font-size: 22px;
+            font-weight: 400;
+            color: var(--primary);
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .brand-subtitle {
+            font-size: 12px;
+            color: var(--dark-gray);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        
+        .nav-section {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .nav-section-title {
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0 25px 10px 25px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 25px;
+            color: var(--dark-gray);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .nav-link:hover {
+            background-color: var(--light-gray);
+            color: var(--primary);
+        }
+        
+        .nav-link.active {
+            color: var(--primary);
+            border-left: 3px solid var(--secondary);
+            background-color: rgba(44, 62, 80, 0.05);
+        }
+        
+        .nav-link i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        .nav-badge {
+            position: absolute;
+            right: 25px;
+            background-color: var(--secondary);
+            color: white;
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-size: 10px;
+        }
+        
+        .user-profile {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            border-top: 1px solid var(--medium-gray);
+            padding: 15px 0;
+        }
+        
+        .main-content {
+            margin-left: 0;
+            padding: 30px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+        
+        @media (min-width: 992px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 280px;
+            }
+            .sidebar-overlay {
+                display: none !important;
+            }
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .page-title {
+            font-size: 24px;
+            font-weight: 400;
+            color: var(--primary);
+            margin: 0;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 24px;
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--medium-gray);
+            padding: 16px 20px;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            margin: 0;
+            color: var(--primary);
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        .kpi-card {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 500;
+            margin: 10px 0;
+        }
+        
+        .kpi-label {
+            font-size: 12px;
+            color: var(--dark-gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .kpi-trend {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .kpi-trend.up {
+            color: var(--success);
+        }
+        
+        .kpi-trend.down {
+            color: var(--danger);
+        }
+        
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 10px;
+            margin-right: 15px;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+        }
+        
+        @media (max-width: 991px) {
+            .hamburger-btn {
+                display: block;
+            }
+        }
+        
+        .route-card {
+            padding: 15px;
+            border-left: 4px solid var(--transport);
+            background-color: rgba(26, 188, 156, 0.05);
+        }
+        
+        .route-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .route-status.optimal {
+            background-color: rgba(39, 174, 96, 0.1);
+            color: var(--success);
+        }
+        
+        .route-status.warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--warning);
+        }
+        
+        .route-status.critical {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+    </style>
+</head>
+<body>
+    <!-- Overlay para menú móvil -->
+    <div class="sidebar-overlay"></div>
+    
+    <!-- Botón hamburguesa para móvil -->
+    <button class="hamburger-btn">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="brand-header">
+            <div class="brand-title">QUESOS LESLIE</div>
+            <div class="brand-subtitle">OPTIMIZACIÓN</div>
+        </div>
+        
+                <!-- MÓDULOS DEL SISTEMA -->
+        <div class="nav-section">
+            <div class="nav-section-title">MÓDULOS</div>
+            <a href="dashboard.html" class="nav-link">
+                <i class="fas fa-chart-pie"></i> Dashboard
+            </a>
+            <a href="produccion.html" class="nav-link">
+                <i class="fas fa-industry"></i> Producción
+                <span class="nav-badge">15</span>
+            </a>
+            <a href="nuevo-lote.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Lote
+            </a>
+            <a href="inventario.html" class="nav-link">
+                <i class="fas fa-boxes"></i> Gestión de Inventario
+                <span class="nav-badge">8</span>
+            </a>
+            <a href="nuevo-producto.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Producto
+            </a>
+            <a href="registro-produccion.html" class="nav-link">
+                <i class="fas fa-clipboard-list"></i> Registro de Producción
+                <span class="nav-badge">3</span>
+            </a>
+            <a href="pedidos.html" class="nav-link">
+                <i class="fas fa-shopping-cart"></i> Gestión de Pedidos
+                <span class="nav-badge">47</span>
+            </a>
+            <a href="nuevo-pedido.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Pedido
+            </a>
+            <a href="ventas-punto.html" class="nav-link">
+                <i class="fas fa-store"></i> Ventas en Punto
+                <span class="nav-badge">12</span>
+            </a>
+            <a href="optimizacion-logistica.html" class="nav-link">
+                <i class="fas fa-route"></i> Optimización Logística
+                <span class="nav-badge">5</span>
+            </a>
+            <a href="nueva-ruta.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nueva Ruta
+            </a>
+            <a href="control-retornos.html" class="nav-link">
+                <i class="fas fa-undo-alt"></i> Control de Retornos
+                <span class="nav-badge">7</span>
+            </a>
+            <a href="registrar-retorno.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Registrar Retorno
+            </a>
+            <a href="experiencia-cliente.html" class="nav-link">
+                <i class="fas fa-smile"></i> Experiencia del Cliente
+            </a>
+            <a href="enviar-encuesta.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-envelope"></i> Enviar Encuesta
+            </a>
+            <a href="analitica-reportes.html" class="nav-link">
+                <i class="fas fa-chart-bar"></i> Analítica y Reportes
+            </a>
+            <a href="nuevo-reporte.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Reporte
+            </a>
+            <a href="gestion-clientes.html" class="nav-link">
+                <i class="fas fa-users"></i> Gestión de Clientes
+                <span class="nav-badge">234</span>
+            </a>
+            <a href="nuevo-cliente.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Cliente
+            </a>
+            <a href="administracion-financiera.html" class="nav-link">
+                <i class="fas fa-dollar-sign"></i> Administración Financiera
+            </a>
+            <a href="nueva-transaccion.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nueva Transacción
+            </a>
+        </div>
+        
+        <!-- User Profile -->
+        <div class="user-profile">
+            <a href="#" class="nav-link">
+                <i class="fas fa-user-circle"></i> Leslie Lugo
+            </a>
+            <a href="#" class="nav-link" id="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Nueva Ruta</h1>
+            <div>
+                <button class="btn btn-primary me-2">
+                    <i class="fas fa-save"></i> Guardar Ruta
+                </button>
+                <button class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+            </div>
+        </div>
+        
+        <!-- KPI Cards -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Rutas Activas</div>
+                    <div class="kpi-value" style="color: var(--transport);">12</div>
+                    <div class="kpi-trend up">
+                        <i class="fas fa-arrow-up"></i> 2 rutas más vs ayer
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Eficiencia Promedio</div>
+                    <div class="kpi-value" style="color: var(--success);">87%</div>
+                    <div class="kpi-trend up">
+                        <i class="fas fa-arrow-up"></i> 5% vs semana anterior
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Tiempo Promedio Entrega</div>
+                    <div class="kpi-value" style="color: var(--human-rights);">45 min</div>
+                    <div class="kpi-trend down">
+                        <i class="fas fa-arrow-down"></i> 8 min menos vs semana anterior
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Ahorro Combustible</div>
+                    <div class="kpi-value" style="color: var(--environment);">$1,250</div>
+                    <div class="kpi-trend up">
+                        <i class="fas fa-arrow-up"></i> $320 más vs mes pasado
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rutas del Día -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Rutas del Día</div>
+                        <button class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-map"></i> Ver Mapa
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="route-card mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-1"><i class="fas fa-truck text-primary me-2"></i>Ruta Norte - Mañana</h6>
+                                    <small class="text-muted">Conductor: Juan Pérez</small>
+                                </div>
+                                <span class="route-status optimal">Óptima</span>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-4">
+                                    <small class="text-muted">Paradas</small>
+                                    <div class="fw-bold">8 de 8</div>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Distancia</small>
+                                    <div class="fw-bold">42 km</div>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Tiempo Estimado</small>
+                                    <div class="fw-bold">2.5 hrs</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="route-card mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-1"><i class="fas fa-truck text-primary me-2"></i>Ruta Centro - Mañana</h6>
+                                    <small class="text-muted">Conductor: María González</small>
+                                </div>
+                                <span class="route-status warning">En Progreso</span>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-4">
+                                    <small class="text-muted">Paradas</small>
+                                    <div class="fw-bold">5 de 12</div>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Distancia</small>
+                                    <div class="fw-bold">35 km</div>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Tiempo Estimado</small>
+                                    <div class="fw-bold">3.0 hrs</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="route-card">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-1"><i class="fas fa-truck text-primary me-2"></i>Ruta Sur - Tarde</h6>
+                                    <small class="text-muted">Conductor: Carlos Ramírez</small>
+                                </div>
+                                <span class="route-status optimal">Óptima</span>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-4">
+                                    <small class="text-muted">Paradas</small>
+                                    <div class="fw-bold">0 de 10</div>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Distancia</small>
+                                    <div class="fw-bold">48 km</div>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Tiempo Estimado</small>
+                                    <div class="fw-bold">2.8 hrs</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Recomendaciones de Optimización</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-success mb-3">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Consolidar entregas</strong>
+                            <p class="mb-0 mt-1 small">3 entregas en la misma zona pueden agruparse para ahorrar 15 km</p>
+                        </div>
+                        
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-clock me-2"></i>
+                            <strong>Ajustar horarios</strong>
+                            <p class="mb-0 mt-1 small">Iniciar Ruta Centro 30 min antes reduce tráfico en 20%</p>
+                        </div>
+                        
+                        <div class="alert alert-warning mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Revisar capacidad</strong>
+                            <p class="mb-0 mt-1 small">Ruta Norte al 98% de capacidad. Considerar redistribuir carga</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Estadísticas Semanales</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small>Entregas Completadas</small>
+                                <small class="fw-bold">168/172</small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: 98%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small>Eficiencia de Rutas</small>
+                                <small class="fw-bold">87%</small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-info" style="width: 87%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <small>Optimización de Combustible</small>
+                                <small class="fw-bold">92%</small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-primary" style="width: 92%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle sidebar on mobile
+        document.querySelector('.hamburger-btn').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        });
+        
+        // Close sidebar when clicking on overlay
+        document.querySelector('.sidebar-overlay').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.remove('active');
+            this.classList.remove('active');
+        });
+        
+        // Close sidebar when clicking on menu items
+        document.querySelectorAll('.sidebar .nav-link').forEach(function(link) {
+            link.addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.remove('active');
+                document.querySelector('.sidebar-overlay').classList.remove('active');
+            });
+        });
+        
+        // Logout simulation
+        document.getElementById('logout-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            if(confirm('¿Está seguro que desea cerrar sesión?')) {
+                alert('Sesión cerrada. Redirigiendo al login...');
+                // In a real application, redirect to login page
+                // window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>
