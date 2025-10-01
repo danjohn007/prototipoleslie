@@ -1,0 +1,1301 @@
+<?php
+/**
+ * Módulo de Nuevo Producto
+ * Formulario para crear un nuevo producto
+ */
+
+// Cargar configuración
+require_once __DIR__ . '/app/config/config.php';
+
+// Verificar autenticación
+$authController = new AuthController();
+$authController->checkAuth();
+
+// Obtener usuario actual
+$userModel = new User();
+$currentUser = $userModel->getCurrentUser();
+
+// Procesar formulario si se envió
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $productController = new ProductController();
+    $productController->createProduct();
+    exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Producto - Quesos Leslie</title>
+    <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #e74c3c;
+            --environment: #27ae60;
+            --human-rights: #3498db;
+            --equity: #9b59b6;
+            --education: #f39c12;
+            --energy: #e67e22;
+            --transport: #1abc9c;
+            --water: #2980b9;
+            --government: #34495e;
+            --security: #c0392b;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 400;
+            color: #333;
+            background-color: var(--light-gray);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .sidebar {
+            background-color: white;
+            height: 100vh;
+            width: 280px;
+            position: fixed;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            border-right: 1px solid var(--medium-gray);
+            z-index: 1000;
+            overflow-y: auto;
+            transform: translateX(-280px);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
+        }
+        
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        .brand-header {
+            padding: 25px;
+            border-bottom: 1px solid var(--medium-gray);
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 100;
+        }
+        
+        .brand-title {
+            font-size: 22px;
+            font-weight: 400;
+            color: var(--primary);
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .brand-subtitle {
+            font-size: 12px;
+            color: var(--dark-gray);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        
+        .nav-section {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .nav-section-title {
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0 25px 10px 25px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 25px;
+            color: var(--dark-gray);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .nav-link:hover {
+            background-color: var(--light-gray);
+            color: var(--primary);
+        }
+        
+        .nav-link.active {
+            color: var(--primary);
+            border-left: 3px solid var(--secondary);
+            background-color: rgba(44, 62, 80, 0.05);
+        }
+        
+        .nav-link i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        .nav-badge {
+            position: absolute;
+            right: 25px;
+            background-color: var(--secondary);
+            color: white;
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-size: 10px;
+        }
+        
+        .main-content {
+            margin-left: 0;
+            padding: 30px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+        
+        @media (min-width: 992px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 280px;
+            }
+            .sidebar-overlay {
+                display: none !important;
+            }
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .page-title {
+            font-size: 24px;
+            font-weight: 400;
+            color: var(--primary);
+            margin: 0;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 24px;
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--medium-gray);
+            padding: 16px 20px;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            margin: 0;
+            color: var(--primary);
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+        
+        .kpi-card {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 500;
+            margin: 10px 0;
+        }
+        
+        .kpi-label {
+            font-size: 12px;
+            color: var(--dark-gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .kpi-trend {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .kpi-trend.up {
+            color: var(--success);
+        }
+        
+        .kpi-trend.down {
+            color: var(--danger);
+        }
+        
+        .user-table {
+            width: 100%;
+            font-size: 14px;
+        }
+        
+        .user-table th {
+            text-align: left;
+            padding: 10px;
+            background-color: var(--light-gray);
+            font-weight: 500;
+            color: var(--dark-gray);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        
+        .user-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .user-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .badge-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .status-optimal {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: #155724;
+        }
+        
+        .status-warning {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #856404;
+        }
+        
+        .status-critical {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: #721c24;
+        }
+        
+        .status-expiring {
+            background-color: rgba(253, 126, 20, 0.2);
+            color: #8d2c0d;
+        }
+        
+        .product-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            margin-right: 8px;
+            color: white;
+            font-size: 12px;
+        }
+        
+        .product-cheese {
+            background-color: #e67e22;
+        }
+        
+        .product-yogurt {
+            background-color: #3498db;
+        }
+        
+        .product-cream {
+            background-color: #9b59b6;
+        }
+        
+        .product-butter {
+            background-color: #f39c12;
+        }
+        
+        .user-profile {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            border-top: 1px solid var(--medium-gray);
+            padding: 15px 0;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-success {
+            background-color: var(--environment);
+            border-color: var(--environment);
+        }
+        
+        .btn-warning {
+            background-color: var(--education);
+            border-color: var(--education);
+        }
+        
+        .btn-info {
+            background-color: var(--human-rights);
+            border-color: var(--human-rights);
+        }
+        
+        .inventory-card {
+            border-left: 4px solid var(--environment);
+        }
+        
+        .inventory-card.warning {
+            border-left-color: var(--warning);
+        }
+        
+        .inventory-card.critical {
+            border-left-color: var(--danger);
+        }
+        
+        .stock-level {
+            height: 8px;
+            border-radius: 4px;
+            background-color: var(--medium-gray);
+            overflow: hidden;
+            margin: 5px 0;
+        }
+        
+        .stock-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .fill-optimal {
+            background-color: var(--success);
+        }
+        
+        .fill-warning {
+            background-color: var(--warning);
+        }
+        
+        .fill-critical {
+            background-color: var(--danger);
+        }
+        
+        .alert-expiring {
+            background-color: rgba(253, 126, 20, 0.1);
+            border: 1px solid rgba(253, 126, 20, 0.3);
+            color: #8d2c0d;
+        }
+        
+        .search-box {
+            max-width: 300px;
+        }
+        
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .inventory-item {
+            background: white;
+            border: 1px solid var(--medium-gray);
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .inventory-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .inventory-item.critical {
+            border-color: var(--danger);
+            background-color: rgba(220, 53, 69, 0.02);
+        }
+        
+        .inventory-item.warning {
+            border-color: var(--warning);
+            background-color: rgba(255, 193, 7, 0.02);
+        }
+        
+        .days-remaining {
+            font-size: 12px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background-color: var(--light-gray);
+        }
+        
+        .days-critical {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+        
+        .days-warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #856404;
+        }
+        
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 10px;
+            margin-right: 15px;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+        }
+        
+        @media (max-width: 991px) {
+            .hamburger-btn {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Overlay para menú móvil -->
+    <div class="sidebar-overlay"></div>
+    
+    <!-- Botón hamburguesa para móvil -->
+    <button class="hamburger-btn">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="brand-header">
+            <div class="brand-title">QUESOS LESLIE</div>
+            <div class="brand-subtitle">INVENTARIO</div>
+        </div>
+        
+                <!-- MÓDULOS DEL SISTEMA -->
+        <div class="nav-section">
+            <div class="nav-section-title">MÓDULOS</div>
+            <a href="dashboard.php" class="nav-link">
+                <i class="fas fa-chart-pie"></i> Dashboard
+            </a>
+            <a href="produccion.php" class="nav-link">
+                <i class="fas fa-industry"></i> Producción
+                <span class="nav-badge">15</span>
+            </a>
+            <a href="nuevo-lote.php" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Lote
+            </a>
+            <a href="inventario.php" class="nav-link">
+                <i class="fas fa-boxes"></i> Gestión de Inventario
+                <span class="nav-badge">8</span>
+            </a>
+            <a href="nuevo-producto.php" class="nav-link active" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Producto
+            </a>
+            <a href="registro-produccion.html" class="nav-link">
+                <i class="fas fa-clipboard-list"></i> Registro de Producción
+                <span class="nav-badge">3</span>
+            </a>
+            <a href="pedidos.html" class="nav-link">
+                <i class="fas fa-shopping-cart"></i> Gestión de Pedidos
+                <span class="nav-badge">47</span>
+            </a>
+            <a href="nuevo-pedido.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Pedido
+            </a>
+            <a href="ventas-punto.html" class="nav-link">
+                <i class="fas fa-store"></i> Ventas en Punto
+                <span class="nav-badge">12</span>
+            </a>
+            <a href="optimizacion-logistica.html" class="nav-link">
+                <i class="fas fa-route"></i> Optimización Logística
+                <span class="nav-badge">5</span>
+            </a>
+            <a href="nueva-ruta.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nueva Ruta
+            </a>
+            <a href="control-retornos.html" class="nav-link">
+                <i class="fas fa-undo-alt"></i> Control de Retornos
+                <span class="nav-badge">7</span>
+            </a>
+            <a href="registrar-retorno.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Registrar Retorno
+            </a>
+            <a href="experiencia-cliente.html" class="nav-link">
+                <i class="fas fa-smile"></i> Experiencia del Cliente
+            </a>
+            <a href="enviar-encuesta.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-envelope"></i> Enviar Encuesta
+            </a>
+            <a href="analitica-reportes.html" class="nav-link">
+                <i class="fas fa-chart-bar"></i> Analítica y Reportes
+            </a>
+            <a href="nuevo-reporte.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Reporte
+            </a>
+            <a href="gestion-clientes.html" class="nav-link">
+                <i class="fas fa-users"></i> Gestión de Clientes
+                <span class="nav-badge">234</span>
+            </a>
+            <a href="nuevo-cliente.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Cliente
+            </a>
+            <a href="administracion-financiera.html" class="nav-link">
+                <i class="fas fa-dollar-sign"></i> Administración Financiera
+            </a>
+            <a href="nueva-transaccion.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nueva Transacción
+            </a>
+        </div>
+        
+        <!-- User Profile -->
+        <div class="user-profile">
+            <a href="#" class="nav-link">
+                <i class="fas fa-user-circle"></i> <?php echo htmlspecialchars($currentUser['nombre']); ?>
+            </a>
+            <a href="index.php?action=logout" class="nav-link" id="logout-btn" onclick="return confirm('¿Está seguro que desea cerrar sesión?')">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Nuevo Producto</h1>
+            <div>
+                <a href="inventario.php" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+        
+        <?php if (isset($_SESSION['errors'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <ul class="mb-0">
+                <?php foreach ($_SESSION['errors'] as $error): ?>
+                    <li><?php echo $error; ?></li>
+                <?php endforeach; ?>
+            </ul>
+            <?php unset($_SESSION['errors']); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php endif; ?>
+        
+        <?php if (isset($_SESSION['error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <?php 
+                echo $_SESSION['error']; 
+                unset($_SESSION['error']);
+            ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php endif; ?>
+        
+        <!-- Formulario de Nuevo Producto -->
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Información del Producto</div>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="nuevo-producto.php">
+                            <div class="mb-3">
+                                <label class="form-label">Nombre del Producto *</label>
+                                <input type="text" class="form-control" name="nombre" required placeholder="Ej: Queso Gouda">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Descripción</label>
+                                <textarea class="form-control" name="descripcion" rows="3" placeholder="Descripción del producto..."></textarea>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Categoría *</label>
+                                    <select class="form-select" name="categoria" required>
+                                        <option value="">Seleccionar categoría...</option>
+                                        <option value="quesos">Quesos</option>
+                                        <option value="lacteos">Lácteos</option>
+                                        <option value="cremas">Cremas</option>
+                                        <option value="otros">Otros</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Unidad de Medida *</label>
+                                    <select class="form-select" name="unidad_medida" required>
+                                        <option value="kg">Kilogramos (kg)</option>
+                                        <option value="litros">Litros</option>
+                                        <option value="unidad">Unidades</option>
+                                        <option value="paquete">Paquetes</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Precio Unitario * (S/)</label>
+                                    <input type="number" class="form-control" name="precio_unitario" required min="0" step="0.01" placeholder="0.00">
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Stock Inicial</label>
+                                    <input type="number" class="form-control" name="stock_actual" min="0" value="0" placeholder="0">
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Stock Mínimo *</label>
+                                    <input type="number" class="form-control" name="stock_minimo" required min="0" value="10" placeholder="10">
+                                </div>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <div class="text-end">
+                                <a href="inventario.php" class="btn btn-secondary me-2">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Guardar Producto
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Valor Total Inventario</div>
+                    <div class="kpi-value" style="color: var(--environment);">$45,680</div>
+                    <div class="kpi-trend up">
+                        <i class="fas fa-arrow-up"></i> 8% vs mes anterior
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Productos en Stock</div>
+                    <div class="kpi-value" style="color: var(--human-rights);">24</div>
+                    <div class="kpi-trend up">
+                        <i class="fas fa-arrow-up"></i> 3 vs mes anterior
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Stock Crítico</div>
+                    <div class="kpi-value" style="color: var(--danger);">3</div>
+                    <div class="kpi-trend down">
+                        <i class="fas fa-arrow-down"></i> 2 vs mes anterior
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Próximos a Caducar</div>
+                    <div class="kpi-value" style="color: var(--warning);">5</div>
+                    <div class="kpi-trend up">
+                        <i class="fas fa-arrow-up"></i> 1 vs semana anterior
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="alert alert-expiring d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle me-3 fs-4"></i>
+                    <div class="flex-grow-1">
+                        <strong>5 productos requieren atención inmediata</strong> - 3 con stock crítico y 2 próximos a caducar
+                    </div>
+                    <button class="btn btn-sm btn-warning">
+                        <i class="fas fa-eye"></i> Ver Detalles
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros y Búsqueda -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <input type="text" class="form-control search-box" placeholder="Buscar producto...">
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select">
+                                    <option>Todos los estados</option>
+                                    <option>Óptimo</option>
+                                    <option>Advertencia</option>
+                                    <option>Crítico</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select">
+                                    <option>Todas las categorías</option>
+                                    <option>Quesos</option>
+                                    <option>Lácteos</option>
+                                    <option>Derivados</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select">
+                                    <option>Ordenar por</option>
+                                    <option>Stock (Mayor a menor)</option>
+                                    <option>Stock (Menor a mayor)</option>
+                                    <option>Próximo a caducar</option>
+                                    <option>Valor total</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-primary w-100">
+                                    <i class="fas fa-filter"></i> Aplicar Filtros
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Vista de Tarjetas de Inventario -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Inventario por Producto</div>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary active">
+                                <i class="fas fa-th"></i> Tarjetas
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-list"></i> Lista
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="inventory-grid">
+                            <!-- Producto 1 -->
+                            <div class="inventory-item critical">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <div class="product-icon product-cheese">
+                                            <i class="fas fa-cheese"></i>
+                                        </div>
+                                        <h6 class="mb-1">Queso Gouda</h6>
+                                        <div class="text-muted small">Lote #PR-231101</div>
+                                    </div>
+                                    <span class="badge-status status-critical">Crítico</span>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Stock:</span>
+                                        <span><strong>15/80 kg</strong></span>
+                                    </div>
+                                    <div class="stock-level">
+                                        <div class="stock-fill fill-critical" style="width: 19%"></div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small mb-2">
+                                    <span>Caduca:</span>
+                                    <span class="days-remaining days-critical">5 días</span>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small">
+                                    <span>Valor:</span>
+                                    <span>$1,875.00</span>
+                                </div>
+                            </div>
+
+                            <!-- Producto 2 -->
+                            <div class="inventory-item warning">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <div class="product-icon product-cheese">
+                                            <i class="fas fa-cheese"></i>
+                                        </div>
+                                        <h6 class="mb-1">Queso Manchego</h6>
+                                        <div class="text-muted small">Lote #PR-231102</div>
+                                    </div>
+                                    <span class="badge-status status-warning">Advertencia</span>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Stock:</span>
+                                        <span><strong>25/60 kg</strong></span>
+                                    </div>
+                                    <div class="stock-level">
+                                        <div class="stock-fill fill-warning" style="width: 42%"></div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small mb-2">
+                                    <span>Caduca:</span>
+                                    <span class="days-remaining days-warning">12 días</span>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small">
+                                    <span>Valor:</span>
+                                    <span>$2,750.00</span>
+                                </div>
+                            </div>
+
+                            <!-- Producto 3 -->
+                            <div class="inventory-item">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <div class="product-icon product-yogurt">
+                                            <i class="fas fa-wine-bottle"></i>
+                                        </div>
+                                        <h6 class="mb-1">Yogurt Natural</h6>
+                                        <div class="text-muted small">Lote #PR-231103</div>
+                                    </div>
+                                    <span class="badge-status status-optimal">Óptimo</span>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Stock:</span>
+                                        <span><strong>45/50 L</strong></span>
+                                    </div>
+                                    <div class="stock-level">
+                                        <div class="stock-fill fill-optimal" style="width: 90%"></div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small mb-2">
+                                    <span>Caduca:</span>
+                                    <span class="days-remaining">25 días</span>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small">
+                                    <span>Valor:</span>
+                                    <span>$1,260.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabla de Inventario Detallado -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Inventario Detallado</div>
+                        <button class="btn btn-sm btn-success">
+                            <i class="fas fa-sync-alt"></i> Actualizar
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Lote</th>
+                                    <th>Stock Actual</th>
+                                    <th>Stock Mínimo</th>
+                                    <th>Estado</th>
+                                    <th>Caducidad</th>
+                                    <th>Valor Unitario</th>
+                                    <th>Valor Total</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <span class="product-icon product-cheese"><i class="fas fa-cheese"></i></span> 
+                                        Queso Gouda
+                                    </td>
+                                    <td>#PR-231101</td>
+                                    <td>15 kg</td>
+                                    <td>20 kg</td>
+                                    <td><span class="badge-status status-critical">Crítico</span></td>
+                                    <td>20/11/2023</td>
+                                    <td>$125.00</td>
+                                    <td>$1,875.00</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning me-1" title="Reabastecer">
+                                            <i class="fas fa-boxes"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-info" title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="product-icon product-cheese"><i class="fas fa-cheese"></i></span> 
+                                        Queso Manchego
+                                    </td>
+                                    <td>#PR-231102</td>
+                                    <td>25 kg</td>
+                                    <td>25 kg</td>
+                                    <td><span class="badge-status status-warning">Advertencia</span></td>
+                                    <td>27/11/2023</td>
+                                    <td>$110.00</td>
+                                    <td>$2,750.00</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning me-1" title="Reabastecer">
+                                            <i class="fas fa-boxes"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-info" title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="product-icon product-yogurt"><i class="fas fa-wine-bottle"></i></span> 
+                                        Yogurt Natural
+                                    </td>
+                                    <td>#PR-231103</td>
+                                    <td>45 L</td>
+                                    <td>15 L</td>
+                                    <td><span class="badge-status status-optimal">Óptimo</span></td>
+                                    <td>10/12/2023</td>
+                                    <td>$28.00</td>
+                                    <td>$1,260.00</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary me-1" title="Ajustar">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-info" title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="product-icon product-cream"><i class="fas fa-wine-bottle"></i></span> 
+                                        Crema Fresca
+                                    </td>
+                                    <td>#PR-231104</td>
+                                    <td>30 kg</td>
+                                    <td>10 kg</td>
+                                    <td><span class="badge-status status-optimal">Óptimo</span></td>
+                                    <td>05/12/2023</td>
+                                    <td>$45.00</td>
+                                    <td>$1,350.00</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary me-1" title="Ajustar">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-info" title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="product-icon product-butter"><i class="fas fa-cube"></i></span> 
+                                        Mantequilla
+                                    </td>
+                                    <td>#PR-231105</td>
+                                    <td>18 kg</td>
+                                    <td>15 kg</td>
+                                    <td><span class="badge-status status-warning">Advertencia</span></td>
+                                    <td>03/12/2023</td>
+                                    <td>$85.00</td>
+                                    <td>$1,530.00</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning me-1" title="Reabastecer">
+                                            <i class="fas fa-boxes"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-info" title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Métricas de Inventario -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Distribución de Stock por Estado</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="stockStatusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Valor de Inventario por Producto</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="inventoryValueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Movimientos Recientes -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Movimientos Recientes</div>
+                        <button class="btn btn-sm btn-primary">
+                            <i class="fas fa-history"></i> Ver Todos
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Producto</th>
+                                    <th>Lote</th>
+                                    <th>Tipo</th>
+                                    <th>Cantidad</th>
+                                    <th>Usuario</th>
+                                    <th>Referencia</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>15/11/2023 09:30</td>
+                                    <td>Queso Gouda</td>
+                                    <td>#PR-231101</td>
+                                    <td><span class="badge-status status-critical">Salida</span></td>
+                                    <td>-5 kg</td>
+                                    <td>Ana Pérez</td>
+                                    <td>Pedido #QL-231101</td>
+                                </tr>
+                                <tr>
+                                    <td>15/11/2023 08:15</td>
+                                    <td>Yogurt Natural</td>
+                                    <td>#PR-231103</td>
+                                    <td><span class="badge-status status-optimal">Entrada</span></td>
+                                    <td>+20 L</td>
+                                    <td>Carlos Rodríguez</td>
+                                    <td>Producción #PR-231115</td>
+                                </tr>
+                                <tr>
+                                    <td>14/11/2023 16:45</td>
+                                    <td>Queso Manchego</td>
+                                    <td>#PR-231102</td>
+                                    <td><span class="badge-status status-critical">Salida</span></td>
+                                    <td>-8 kg</td>
+                                    <td>Luis Gómez</td>
+                                    <td>Pedido #QL-231100</td>
+                                </tr>
+                                <tr>
+                                    <td>14/11/2023 14:20</td>
+                                    <td>Crema Fresca</td>
+                                    <td>#PR-231104</td>
+                                    <td><span class="badge-status status-optimal">Entrada</span></td>
+                                    <td>+15 kg</td>
+                                    <td>María González</td>
+                                    <td>Producción #PR-231114</td>
+                                </tr>
+                                <tr>
+                                    <td>14/11/2023 11:10</td>
+                                    <td>Mantequilla</td>
+                                    <td>#PR-231105</td>
+                                    <td><span class="badge-status status-critical">Salida</span></td>
+                                    <td>-3 kg</td>
+                                    <td>Ana Pérez</td>
+                                    <td>Venta #V-231105</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sidebar toggle for mobile
+        const hamburgerBtn = document.querySelector('.hamburger-btn');
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarOverlay = document.querySelector('.sidebar-overlay');
+        
+        if (hamburgerBtn) {
+            hamburgerBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+        }
+        
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+    </script>
+</body>
+</html>
+        // Stock Status Chart
+        const stockStatusCtx = document.getElementById('stockStatusChart').getContext('2d');
+        const stockStatusChart = new Chart(stockStatusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Óptimo', 'Advertencia', 'Crítico'],
+                datasets: [{
+                    data: [16, 5, 3],
+                    backgroundColor: [
+                        '#28a745',
+                        '#ffc107',
+                        '#dc3545'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.raw + ' productos';
+                            }
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+
+        // Inventory Value Chart
+        const inventoryValueCtx = document.getElementById('inventoryValueChart').getContext('2d');
+        const inventoryValueChart = new Chart(inventoryValueCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Queso Gouda', 'Queso Manchego', 'Yogurt Natural', 'Crema Fresca', 'Mantequilla'],
+                datasets: [{
+                    label: 'Valor del Inventario ($)',
+                    data: [1875, 2750, 1260, 1350, 1530],
+                    backgroundColor: [
+                        'rgba(230, 126, 34, 0.7)',
+                        'rgba(52, 152, 219, 0.7)',
+                        'rgba(155, 89, 182, 0.7)',
+                        'rgba(243, 156, 18, 0.7)',
+                        'rgba(39, 174, 96, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(230, 126, 34, 1)',
+                        'rgba(52, 152, 219, 1)',
+                        'rgba(155, 89, 182, 1)',
+                        'rgba(243, 156, 18, 1)',
+                        'rgba(39, 174, 96, 1)'
+                    ],
+                                       borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Toggle sidebar on mobile
+        document.querySelector('.hamburger-btn').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        });
+        
+        // Close sidebar when clicking on overlay
+        document.querySelector('.sidebar-overlay').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.remove('active');
+            this.classList.remove('active');
+        });
+        
+        // Close sidebar when clicking on menu items
+        document.querySelectorAll('.sidebar .nav-link').forEach(function(link) {
+            link.addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.remove('active');
+                document.querySelector('.sidebar-overlay').classList.remove('active');
+            });
+        });
+        
+        // Logout simulation
+        document.getElementById('logout-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            if(confirm('¿Está seguro que desea cerrar sesión?')) {
+                alert('Sesión cerrada. Redirigiendo al login...');
+                // In a real application, redirect to login page
+                // window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>
