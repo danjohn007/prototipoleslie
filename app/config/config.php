@@ -85,3 +85,8 @@ spl_autoload_register(function($class) {
         }
     }
 });
+
+// ============================================
+// CARGAR FUNCIONES HELPER
+// ============================================
+require_once APP_PATH . '/config/helpers.php';
