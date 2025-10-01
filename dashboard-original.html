@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quesos Leslie - Sistema de Logística</title>
+    <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #e74c3c;
+            --environment: #27ae60;
+            --human-rights: #3498db;
+            --equity: #9b59b6;
+            --education: #f39c12;
+            --energy: #e67e22;
+            --transport: #1abc9c;
+            --water: #2980b9;
+            --government: #34495e;
+            --security: #c0392b;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --commission: #6f42c1;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 400;
+            color: #333;
+            background-color: var(--light-gray);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .sidebar {
+            background-color: white;
+            height: 100vh;
+            width: 280px;
+            position: fixed;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            border-right: 1px solid var(--medium-gray);
+            z-index: 1000;
+            overflow-y: auto;
+            transform: translateX(-280px);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
+        }
+        
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        .brand-header {
+            padding: 25px;
+            border-bottom: 1px solid var(--medium-gray);
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 100;
+        }
+        
+        .brand-title {
+            font-size: 22px;
+            font-weight: 400;
+            color: var(--primary);
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .brand-subtitle {
+            font-size: 12px;
+            color: var(--dark-gray);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        
+        .nav-section {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .nav-section-title {
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0 25px 10px 25px;
+            position: sticky;
+            top: 80px;
+            background: white;
+            z-index: 90;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 25px;
+            color: var(--dark-gray);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .nav-link:hover {
+            background-color: var(--light-gray);
+            color: var(--primary);
+        }
+        
+        .nav-link.active {
+            color: var(--primary);
+            border-left: 3px solid var(--secondary);
+            background-color: rgba(44, 62, 80, 0.05);
+        }
+        
+        .nav-link i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        .nav-badge {
+            position: absolute;
+            right: 25px;
+            background-color: var(--secondary);
+            color: white;
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-size: 10px;
+        }
+        
+        .main-content {
+            margin-left: 0;
+            padding: 30px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+        
+        @media (min-width: 992px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 280px;
+            }
+            .sidebar-overlay {
+                display: none !important;
+            }
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .page-title {
+            font-size: 24px;
+            font-weight: 400;
+            color: var(--primary);
+            margin: 0;
+        }
+        
+        .date-selector {
+            display: flex;
+            align-items: center;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 24px;
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--medium-gray);
+            padding: 16px 20px;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            margin: 0;
+            color: var(--primary);
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+        
+        .kpi-card {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 500;
+            margin: 10px 0;
+        }
+        
+        .kpi-label {
+            font-size: 12px;
+            color: var(--dark-gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .kpi-trend {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .kpi-trend.up {
+            color: var(--success);
+        }
+        
+        .kpi-trend.down {
+            color: var(--danger);
+        }
+        
+        .user-table {
+            width: 100%;
+            font-size: 14px;
+        }
+        
+        .user-table th {
+            text-align: left;
+            padding: 10px;
+            background-color: var(--light-gray);
+            font-weight: 500;
+            color: var(--dark-gray);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        
+        .user-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .user-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .badge-category {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 400;
+            color: white;
+        }
+        
+        .badge-production {
+            background-color: var(--environment);
+        }
+        
+        .badge-orders {
+            background-color: var(--human-rights);
+        }
+        
+        .badge-logistics {
+            background-color: var(--equity);
+        }
+        
+        .badge-sales {
+            background-color: var(--education);
+        }
+        
+        .badge-returns {
+            background-color: var(--energy);
+        }
+        
+        .badge-customer {
+            background-color: var(--transport);
+        }
+        
+        .badge-analytics {
+            background-color: var(--water);
+        }
+        
+        .badge-finance {
+            background-color: var(--government);
+        }
+        
+        .badge-security {
+            background-color: var(--security);
+        }
+        
+        .user-profile {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            border-top: 1px solid var(--medium-gray);
+            padding: 15px 0;
+            z-index: 80;
+        }
+        
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 10px;
+            margin-right: 15px;
+        }
+        
+        @media (max-width: 991px) {
+            .hamburger-btn {
+                display: block;
+            }
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #856404;
+        }
+        
+        .status-in-progress {
+            background-color: rgba(0, 123, 255, 0.2);
+            color: #004085;
+        }
+        
+        .status-delivered {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: #155724;
+        }
+        
+        .status-cancelled {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: #721c24;
+        }
+        
+        .product-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            margin-right: 8px;
+            color: white;
+            font-size: 12px;
+        }
+        
+        .product-cheese {
+            background-color: #e67e22;
+        }
+        
+        .product-yogurt {
+            background-color: #3498db;
+        }
+        
+        .product-cream {
+            background-color: #9b59b6;
+        }
+        
+        .product-butter {
+            background-color: #f39c12;
+        }
+    </style>
+</head>
+<body>
+    <!-- Overlay para menú móvil -->
+    <div class="sidebar-overlay"></div>
+    
+    <!-- Botón hamburguesa para móvil -->
+    <button class="hamburger-btn">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="brand-header">
+            <div class="brand-title">QUESOS LESLIE</div>
+            <div class="brand-subtitle">LOGÍSTICA</div>
+        </div>
+        
+                <!-- MÓDULOS DEL SISTEMA -->
+        <div class="nav-section">
+            <div class="nav-section-title">MÓDULOS</div>
+            <a href="dashboard.html" class="nav-link">
+                <i class="fas fa-chart-pie"></i> Dashboard
+            </a>
+            <a href="produccion.html" class="nav-link">
+                <i class="fas fa-industry"></i> Producción
+                <span class="nav-badge">15</span>
+            </a>
+            <a href="nuevo-lote.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Lote
+            </a>
+            <a href="inventario.html" class="nav-link">
+                <i class="fas fa-boxes"></i> Gestión de Inventario
+                <span class="nav-badge">8</span>
+            </a>
+            <a href="nuevo-producto.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Producto
+            </a>
+            <a href="registro-produccion.html" class="nav-link">
+                <i class="fas fa-clipboard-list"></i> Registro de Producción
+                <span class="nav-badge">3</span>
+            </a>
+            <a href="pedidos.html" class="nav-link">
+                <i class="fas fa-shopping-cart"></i> Gestión de Pedidos
+                <span class="nav-badge">47</span>
+            </a>
+            <a href="nuevo-pedido.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Pedido
+            </a>
+            <a href="ventas-punto.html" class="nav-link">
+                <i class="fas fa-store"></i> Ventas en Punto
+                <span class="nav-badge">12</span>
+            </a>
+            <a href="optimizacion-logistica.html" class="nav-link">
+                <i class="fas fa-route"></i> Optimización Logística
+                <span class="nav-badge">5</span>
+            </a>
+            <a href="nueva-ruta.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nueva Ruta
+            </a>
+            <a href="control-retornos.html" class="nav-link">
+                <i class="fas fa-undo-alt"></i> Control de Retornos
+                <span class="nav-badge">7</span>
+            </a>
+            <a href="registrar-retorno.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Registrar Retorno
+            </a>
+            <a href="experiencia-cliente.html" class="nav-link">
+                <i class="fas fa-smile"></i> Experiencia del Cliente
+            </a>
+            <a href="enviar-encuesta.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-envelope"></i> Enviar Encuesta
+            </a>
+            <a href="analitica-reportes.html" class="nav-link">
+                <i class="fas fa-chart-bar"></i> Analítica y Reportes
+            </a>
+            <a href="nuevo-reporte.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Reporte
+            </a>
+            <a href="gestion-clientes.html" class="nav-link">
+                <i class="fas fa-users"></i> Gestión de Clientes
+                <span class="nav-badge">234</span>
+            </a>
+            <a href="nuevo-cliente.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nuevo Cliente
+            </a>
+            <a href="administracion-financiera.html" class="nav-link">
+                <i class="fas fa-dollar-sign"></i> Administración Financiera
+            </a>
+            <a href="nueva-transaccion.html" class="nav-link" style="padding-left: 40px;">
+                <i class="fas fa-plus-circle"></i> Nueva Transacción
+            </a>
+        </div>
+        
+        <!-- User Profile -->
+        <div class="user-profile">
+            <a href="#" class="nav-link">
+                <i class="fas fa-user-circle"></i> Leslie Lugo
+            </a>
+            <a href="#" class="nav-link" id="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Dashboard de Logística</h1>
+            <div class="date-selector">
+                <select class="form-select form-select-sm" style="width: 150px;">
+                    <option>Últimos 7 días</option>
+                    <option selected>Este mes</option>
+                    <option>Trimestre actual</option>
+                    <option>Este año</option>
+                    <option>Personalizado...</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- KPI Cards -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Producción Diaria</div>
+                    <div class="kpi-value" style="color: var(--environment);">245 kg</div>
+                    <div class="kpi-trend up">
+                        <i class="fas fa-arrow-up"></i> 12% vs semana anterior
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Pedidos Pendientes</div>
+                    <div class="kpi-value" style="color: var(--human-rights);">47</div>
+                    <div class="kpi-trend up">
+                        <i class="fas fa-arrow-up"></i> 5% vs semana anterior
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Entregas Hoy</div>
+                    <div class="kpi-value" style="color: var(--equity);">32</div>
+                    <div class="kpi-trend up">
+                        <i class="fas fa-arrow-up"></i> 8% vs semana anterior
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Productos Próximos a Caducar</div>
+                    <div class="kpi-value" style="color: var(--education);">15</div>
+                    <div class="kpi-trend down">
+                        <i class="fas fa-arrow-down"></i> 3% vs semana anterior
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- First Row of Charts -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Producción por Producto (Últimos 6 meses)</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="productionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Distribución de Productos</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="productDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Second Row of Charts -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Estado de Entregas</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="deliveryStatusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Ventas por Canal</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="salesChannelChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tables -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Pedidos Recientes</div>
+                    </div>
+                    <div class="card-body">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>ID Pedido</th>
+                                    <th>Cliente</th>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#QL-00125</td>
+                                    <td>Restaurante La Parrilla</td>
+                                    <td><span class="product-icon product-cheese"><i class="fas fa-cheese"></i></span> Queso Gouda</td>
+                                    <td>15 kg</td>
+                                    <td><span class="status-badge status-delivered">Entregado</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#QL-00126</td>
+                                    <td>Supermercado Central</td>
+                                    <td><span class="product-icon product-cheese"><i class="fas fa-cheese"></i></span> Queso Manchego</td>
+                                    <td>25 kg</td>
+                                    <td><span class="status-badge status-in-progress">En Ruta</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#QL-00127</td>
+                                    <td>Cafetería El Aroma</td>
+                                    <td><span class="product-icon product-yogurt"><i class="fas fa-wine-bottle"></i></span> Yogurt Natural</td>
+                                    <td>8 kg</td>
+                                    <td><span class="status-badge status-pending">Pendiente</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#QL-00128</td>
+                                    <td>Tienda Gourmet</td>
+                                    <td><span class="product-icon product-cream"><i class="fas fa-wine-bottle"></i></span> Crema Fresca</td>
+                                    <td>5 kg</td>
+                                    <td><span class="status-badge status-pending">Pendiente</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#QL-00129</td>
+                                    <td>Hotel Plaza</td>
+                                    <td><span class="product-icon product-butter"><i class="fas fa-cube"></i></span> Mantequilla</td>
+                                    <td>32 kg</td>
+                                    <td><span class="status-badge status-cancelled">Cancelado</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Vendedores Más Activos</div>
+                        <button class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus"></i> Nuevo
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Vendedor</th>
+                                    <th>Ruta</th>
+                                    <th>Entregas</th>
+                                    <th>Ventas</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Ana Pérez</td>
+                                    <td><span class="badge-category badge-production">Centro</span></td>
+                                    <td>24</td>
+                                    <td>$3,450</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Luis Gómez</td>
+                                    <td><span class="badge-category badge-orders">Norte</span></td>
+                                    <td>18</td>
+                                    <td>$2,980</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>María Ruiz</td>
+                                    <td><span class="badge-category badge-logistics">Sur</span></td>
+                                    <td>15</td>
+                                    <td>$2,450</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Carlos Díaz</td>
+                                    <td><span class="badge-category badge-sales">Este</span></td>
+                                    <td>12</td>
+                                    <td>$2,120</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Sofía Méndez</td>
+                                    <td><span class="badge-category badge-returns">Oeste</span></td>
+                                    <td>10</td>
+                                    <td>$1,980</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional Metrics -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Rendimiento por Ruta</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="height: 300px;">
+                            <canvas id="routePerformanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script>
+        // Toggle sidebar on mobile
+        document.querySelector('.hamburger-btn').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        });
+        
+        // Close sidebar when clicking on overlay
+        document.querySelector('.sidebar-overlay').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.remove('active');
+            this.classList.remove('active');
+        });
+        
+        // Close sidebar when clicking on menu items
+        document.querySelectorAll('.sidebar .nav-link').forEach(function(link) {
+            link.addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.remove('active');
+                document.querySelector('.sidebar-overlay').classList.remove('active');
+            });
+        });
+        
+        // Logout simulation
+        document.getElementById('logout-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            if(confirm('¿Está seguro que desea cerrar sesión?')) {
+                alert('Sesión cerrada. Redirigiendo al login...');
+                // In a real application, redirect to login page
+                // window.location.href = 'login.html';
+            }
+        });
+        
+        // Production Chart
+        const productionCtx = document.getElementById('productionChart').getContext('2d');
+        const productionChart = new Chart(productionCtx, {
+            type: 'bar',
+            data: {
+                labels: ['May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct'],
+                datasets: [
+                    {
+                        label: 'Queso Gouda',
+                        data: [1200, 1350, 1420, 1500, 1480, 1560],
+                        backgroundColor: 'rgba(39, 174, 96, 0.7)',
+                        borderColor: 'rgba(39, 174, 96, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Queso Manchego',
+                        data: [950, 1020, 980, 1050, 1100, 1120],
+                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Yogurt Natural',
+                        data: [780, 820, 850, 880, 900, 920],
+                        backgroundColor: 'rgba(155, 89, 182, 0.7)',
+                        borderColor: 'rgba(155, 89, 182, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Crema Fresca',
+                        data: [650, 680, 700, 720, 730, 740],
+                        backgroundColor: 'rgba(243, 156, 18, 0.7)',
+                        borderColor: 'rgba(243, 156, 18, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value + ' kg';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Product Distribution Chart
+        const productDistributionCtx = document.getElementById('productDistributionChart').getContext('2d');
+        const productDistributionChart = new Chart(productDistributionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Queso Gouda', 'Queso Manchego', 'Yogurt Natural', 'Crema Fresca', 'Mantequilla'],
+                datasets: [{
+                    data: [35, 25, 20, 15, 5],
+                    backgroundColor: [
+                        '#27ae60',
+                        '#3498db',
+                        '#9b59b6',
+                        '#f39c12',
+                        '#e67e22'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.raw + '%';
+                            }
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+
+        // Delivery Status Chart
+        const deliveryStatusCtx = document.getElementById('deliveryStatusChart').getContext('2d');
+        const deliveryStatusChart = new Chart(deliveryStatusCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Entregado', 'En Ruta', 'Pendiente', 'Cancelado'],
+                datasets: [{
+                    data: [65, 15, 15, 5],
+                    backgroundColor: [
+                        '#28a745',
+                        '#007bff',
+                        '#ffc107',
+                        '#dc3545'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.raw + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Sales Channel Chart
+        const salesChannelCtx = document.getElementById('salesChannelChart').getContext('2d');
+        const salesChannelChart = new Chart(salesChannelCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Preventa Web', 'WhatsApp', 'Venta Directa', 'Telefónica'],
+                datasets: [{
+                    label: 'Ventas ($)',
+                    data: [4500, 3200, 2800, 1500],
+                    backgroundColor: [
+                        'rgba(44, 62, 80, 0.7)',
+                        'rgba(44, 62, 80, 0.7)',
+                        'rgba(44, 62, 80, 0.7)',
+                        'rgba(44, 62, 80, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(44, 62, 80, 1)',
+                        'rgba(44, 62, 80, 1)',
+                        'rgba(44, 62, 80, 1)',
+                        'rgba(44, 62, 80, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString('es-MX');
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Route Performance Chart
+        const routePerformanceCtx = document.getElementById('routePerformanceChart').getContext('2d');
+        const routePerformanceChart = new Chart(routePerformanceCtx, {
+            type: 'line',
+            data: {
+                labels: ['Norte', 'Centro', 'Sur', 'Este', 'Oeste'],
+                datasets: [
+                    {
+                        label: 'Entregas Completadas',
+                        data: [45, 38, 42, 39, 40],
+                        borderColor: '#27ae60',
+                        backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Tiempo Promedio (min)',
+                        data: [65, 55, 70, 60, 75],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Satisfacción Cliente',
+                        data: [4.8, 4.5, 4.2, 4.6, 4.3],
+                        borderColor: '#f39c12',
+                        backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
