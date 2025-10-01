@@ -553,10 +553,10 @@ unset($_SESSION['success'], $_SESSION['error'], $_SESSION['errors']);
             <a href="analitica-reportes.php" class="nav-link">
                 <i class="fas fa-chart-bar"></i> Analítica y Reportes
             </a>
-            <a href="gestion-clientes.html" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/gestion-clientes.php" class="nav-link">
                 <i class="fas fa-users"></i> Gestión de Clientes
             </a>
-            <a href="administracion-financiera.html" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/administracion-financiera.php" class="nav-link">
                 <i class="fas fa-dollar-sign"></i> Administración Financiera
             </a>
         </div>

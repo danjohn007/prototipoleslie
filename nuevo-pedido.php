@@ -537,7 +537,7 @@ unset($_SESSION['error'], $_SESSION['errors']);
             <a href="nuevo-producto.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nuevo Producto
             </a>
-            <a href="registro-produccion.html" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/registro-produccion.php" class="nav-link">
                 <i class="fas fa-clipboard-list"></i> Registro de Producción
                 <span class="nav-badge">3</span>
             </a>
@@ -569,26 +569,26 @@ unset($_SESSION['error'], $_SESSION['errors']);
             <a href="experiencia-cliente.php" class="nav-link">
                 <i class="fas fa-smile"></i> Experiencia del Cliente
             </a>
-            <a href="enviar-encuesta.html" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/enviar-encuesta.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-envelope"></i> Enviar Encuesta
             </a>
             <a href="analitica-reportes.php" class="nav-link">
                 <i class="fas fa-chart-bar"></i> Analítica y Reportes
             </a>
-            <a href="nuevo-reporte.html" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/nuevo-reporte.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nuevo Reporte
             </a>
-            <a href="gestion-clientes.html" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/gestion-clientes.php" class="nav-link">
                 <i class="fas fa-users"></i> Gestión de Clientes
                 <span class="nav-badge">234</span>
             </a>
-            <a href="nuevo-cliente.html" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/nuevo-cliente.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nuevo Cliente
             </a>
-            <a href="administracion-financiera.html" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/administracion-financiera.php" class="nav-link">
                 <i class="fas fa-dollar-sign"></i> Administración Financiera
             </a>
-            <a href="nueva-transaccion.html" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/nueva-transaccion.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nueva Transacción
             </a>
         </div>
