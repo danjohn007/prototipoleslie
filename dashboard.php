@@ -14,6 +14,22 @@ $authController->checkAuth();
 // Obtener usuario actual
 $userModel = new User();
 $currentUser = $userModel->getCurrentUser();
+
+// Obtener datos para el dashboard
+$orderModel = new Order();
+$productionModel = new Production();
+$productModel = new Product();
+$inventoryModel = new Inventory();
+
+// Estadísticas
+$orderStats = $orderModel->getStats();
+$productionStats = $productionModel->getStats();
+$productStats = $productModel->getStats();
+$inventoryStats = $inventoryModel->getStats();
+
+// Datos para gráficas
+$recentOrders = $orderModel->getRecent(7);
+$recentProduction = $productionModel->getRecent(5);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -223,52 +239,10 @@ $currentUser = $userModel->getCurrentUser();
             }
         }
     </style>
+    <?php include __DIR__ . '/app/includes/sidebar-styles.php'; ?>
 </head>
 <body>
-    <!-- Sidebar Navigation -->
-    <div class="sidebar">
-        <div class="brand-header">
-            <div class="brand-title">QUESOS LESLIE</div>
-            <div class="brand-subtitle">SISTEMA</div>
-        </div>
-        
-        <!-- MÓDULOS DEL SISTEMA -->
-        <div class="nav-section">
-            <div class="nav-section-title">MÓDULOS</div>
-            <a href="<?php echo BASE_URL; ?>/dashboard.php" class="nav-link">
-                <i class="fas fa-chart-pie"></i> Dashboard
-            </a>
-            <a href="<?php echo BASE_URL; ?>/produccion.php" class="nav-link">
-                <i class="fas fa-industry"></i> Producción
-            </a>
-            <a href="<?php echo BASE_URL; ?>/inventario.php" class="nav-link">
-                <i class="fas fa-boxes"></i> Inventario
-            </a>
-            <a href="<?php echo BASE_URL; ?>/pedidos.php" class="nav-link">
-                <i class="fas fa-shopping-cart"></i> Pedidos
-            </a>
-            <a href="<?php echo BASE_URL; ?>/optimizacion-logistica.php" class="nav-link">
-                <i class="fas fa-route"></i> Logística
-            </a>
-            <a href="<?php echo BASE_URL; ?>/experiencia-cliente.php" class="nav-link">
-                <i class="fas fa-users"></i> Clientes
-            </a>
-            <a href="<?php echo BASE_URL; ?>/analitica-reportes.php" class="nav-link">
-                <i class="fas fa-chart-bar"></i> Analítica
-            </a>
-        </div>
-        
-        <!-- User Profile -->
-        <div class="user-profile">
-            <div class="user-info">
-                <div class="user-name"><i class="fas fa-user-circle me-2"></i> <?php echo htmlspecialchars($currentUser['nombre']); ?></div>
-                <div class="user-role"><?php echo htmlspecialchars($currentUser['rol']); ?></div>
-            </div>
-            <a href="<?php echo BASE_URL; ?>/index.php?action=logout" class="nav-link" onclick="return confirm('¿Está seguro que desea cerrar sesión?')">
-                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-            </a>
-        </div>
-    </div>
+    <?php include __DIR__ . '/app/includes/sidebar.php'; ?>
     
     <!-- Main Content Area -->
     <div class="main-content">
@@ -296,83 +270,118 @@ $currentUser = $userModel->getCurrentUser();
         <div class="row">
             <div class="col-md-3">
                 <div class="card kpi-card">
-                    <div class="kpi-label">Pedidos Hoy</div>
-                    <div class="kpi-value" style="color: var(--primary);">23</div>
+                    <div class="kpi-label">Total Pedidos</div>
+                    <div class="kpi-value" style="color: var(--primary);"><?php echo $orderStats['total'] ?? 0; ?></div>
                     <div class="kpi-trend up">
-                        <i class="fas fa-arrow-up"></i> 12% vs ayer
+                        <i class="fas fa-shopping-cart"></i> Gestión de Pedidos
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card kpi-card">
                     <div class="kpi-label">En Producción</div>
-                    <div class="kpi-value" style="color: var(--education);">8</div>
+                    <div class="kpi-value" style="color: var(--education);"><?php echo $productionStats['en_proceso'] ?? 0; ?></div>
                     <div class="kpi-trend up">
-                        <i class="fas fa-arrow-up"></i> 2 lotes nuevos
+                        <i class="fas fa-industry"></i> Lotes Activos
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card kpi-card">
-                    <div class="kpi-label">Rutas Activas</div>
-                    <div class="kpi-value" style="color: var(--transport);">5</div>
+                    <div class="kpi-label">Productos</div>
+                    <div class="kpi-value" style="color: var(--transport);"><?php echo $productStats['total'] ?? 0; ?></div>
                     <div class="kpi-trend">
-                        <i class="fas fa-minus"></i> Sin cambios
+                        <i class="fas fa-boxes"></i> En Inventario
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card kpi-card">
-                    <div class="kpi-label">Satisfacción</div>
-                    <div class="kpi-value" style="color: var(--success);">4.8/5</div>
-                    <div class="kpi-trend up">
-                        <i class="fas fa-arrow-up"></i> +0.2 pts
+                    <div class="kpi-label">Stock Bajo</div>
+                    <div class="kpi-value" style="color: var(--danger);"><?php echo $inventoryStats['bajo_stock'] ?? 0; ?></div>
+                    <div class="kpi-trend down">
+                        <i class="fas fa-exclamation-triangle"></i> Requieren atención
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Welcome Message -->
+        <!-- Charts Section -->
+        <div class="row">
+            <!-- Chart 1: Pedidos por Estado -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-pie me-2"></i> Pedidos por Estado
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="ordersStatusChart" style="max-height: 250px;"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chart 2: Producción Reciente -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-bar me-2"></i> Producción Reciente
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="productionChart" style="max-height: 250px;"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chart 3: Estado del Inventario -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-doughnut me-2"></i> Estado del Inventario
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="inventoryChart" style="max-height: 250px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Access -->
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-body text-center py-5">
-                        <h2 class="mb-3">
-                            <i class="fas fa-cheese text-primary me-2"></i>
-                            Bienvenido al Sistema de Logística Quesos Leslie
-                        </h2>
-                        <p class="lead text-muted mb-4">
-                            Sistema completo de gestión logística desarrollado con PHP puro y MySQL
-                        </p>
-                        <div class="row text-start">
-                            <div class="col-md-6">
-                                <h5><i class="fas fa-check-circle text-success me-2"></i> Características Implementadas:</h5>
-                                <ul class="list-unstyled ms-4">
-                                    <li><i class="fas fa-chevron-right text-primary me-2"></i> Arquitectura MVC</li>
-                                    <li><i class="fas fa-chevron-right text-primary me-2"></i> Autenticación con password_hash()</li>
-                                    <li><i class="fas fa-chevron-right text-primary me-2"></i> Base de datos MySQL con datos de ejemplo</li>
-                                    <li><i class="fas fa-chevron-right text-primary me-2"></i> URL Base auto-configurable</li>
-                                    <li><i class="fas fa-chevron-right text-primary me-2"></i> Bootstrap 5 para diseño responsivo</li>
-                                </ul>
-                            </div>
-                            <div class="col-md-6">
-                                <h5><i class="fas fa-cog text-info me-2"></i> Módulos del Sistema:</h5>
-                                <ul class="list-unstyled ms-4">
-                                    <li><i class="fas fa-chevron-right text-primary me-2"></i> Gestión de Producción e Inventario</li>
-                                    <li><i class="fas fa-chevron-right text-primary me-2"></i> Control de Pedidos y Ventas</li>
-                                    <li><i class="fas fa-chevron-right text-primary me-2"></i> Optimización Logística</li>
-                                    <li><i class="fas fa-chevron-right text-primary me-2"></i> Experiencia del Cliente</li>
-                                    <li><i class="fas fa-chevron-right text-primary me-2"></i> Analítica y Reportes</li>
-                                </ul>
-                            </div>
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-bolt me-2"></i> Accesos Rápidos
                         </div>
-                        <div class="mt-4">
-                            <a href="<?php echo BASE_URL; ?>/test-connection.php" class="btn btn-primary btn-lg me-2">
-                                <i class="fas fa-vial me-2"></i> Test de Conexión
-                            </a>
-                            <a href="<?php echo BASE_URL; ?>/produccion.php" class="btn btn-success btn-lg">
-                                <i class="fas fa-industry me-2"></i> Ver Producción
-                            </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <a href="<?php echo BASE_URL; ?>/nuevo-pedido.php" class="btn btn-primary btn-lg w-100 mb-2">
+                                    <i class="fas fa-plus-circle me-2"></i> Nuevo Pedido
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="<?php echo BASE_URL; ?>/nuevo-lote.php" class="btn btn-success btn-lg w-100 mb-2">
+                                    <i class="fas fa-industry me-2"></i> Nuevo Lote
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="<?php echo BASE_URL; ?>/nuevo-producto.php" class="btn btn-info btn-lg w-100 mb-2">
+                                    <i class="fas fa-box me-2"></i> Nuevo Producto
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="<?php echo BASE_URL; ?>/analitica-reportes.php" class="btn btn-warning btn-lg w-100 mb-2">
+                                    <i class="fas fa-chart-line me-2"></i> Ver Reportes
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -381,5 +390,139 @@ $currentUser = $userModel->getCurrentUser();
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        // Chart 1: Pedidos por Estado
+        const ordersCtx = document.getElementById('ordersStatusChart').getContext('2d');
+        const ordersChart = new Chart(ordersCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pendiente', 'Confirmado', 'En Preparación', 'En Ruta', 'Entregado'],
+                datasets: [{
+                    data: [
+                        <?php echo $orderStats['pendientes'] ?? 0; ?>,
+                        <?php echo $orderStats['confirmados'] ?? 0; ?>,
+                        <?php echo $orderStats['en_preparacion'] ?? 0; ?>,
+                        <?php echo $orderStats['en_ruta'] ?? 0; ?>,
+                        <?php echo $orderStats['entregados'] ?? 0; ?>
+                    ],
+                    backgroundColor: [
+                        '#ffc107',
+                        '#3498db',
+                        '#9b59b6',
+                        '#e67e22',
+                        '#27ae60'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 10,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Chart 2: Producción Reciente
+        const productionCtx = document.getElementById('productionChart').getContext('2d');
+        const productionChart = new Chart(productionCtx, {
+            type: 'bar',
+            data: {
+                labels: [<?php 
+                    $labels = [];
+                    foreach ($recentProduction as $prod) {
+                        $labels[] = "'" . substr($prod['producto_nombre'], 0, 15) . "'";
+                    }
+                    echo implode(',', $labels);
+                ?>],
+                datasets: [{
+                    label: 'Cantidad Producida',
+                    data: [<?php 
+                        $quantities = [];
+                        foreach ($recentProduction as $prod) {
+                            $quantities[] = $prod['cantidad_producida'];
+                        }
+                        echo implode(',', $quantities);
+                    ?>],
+                    backgroundColor: '#27ae60',
+                    borderColor: '#229954',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                size: 10
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Chart 3: Estado del Inventario
+        const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
+        const inventoryChart = new Chart(inventoryCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Stock Óptimo', 'Stock Bajo', 'Sin Stock'],
+                datasets: [{
+                    data: [
+                        <?php echo $inventoryStats['optimo'] ?? 0; ?>,
+                        <?php echo $inventoryStats['bajo_stock'] ?? 0; ?>,
+                        <?php echo $inventoryStats['sin_stock'] ?? 0; ?>
+                    ],
+                    backgroundColor: [
+                        '#27ae60',
+                        '#ffc107',
+                        '#dc3545'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 10,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>

@@ -131,10 +131,31 @@ class User {
     /**
      * Cambia el password de un usuario
      */
-    public function changePassword($userId, $newPassword) {
+    public function changePassword($userId, $currentPassword, $newPassword) {
+        // Verificar contraseña actual
+        $sql = "SELECT password FROM usuarios WHERE id = ?";
+        $user = $this->db->queryOne($sql, [$userId]);
+        
+        if (!$user || !password_verify($currentPassword, $user['password'])) {
+            return false;
+        }
+        
+        // Actualizar con nueva contraseña
         $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
         $sql = "UPDATE usuarios SET password = ? WHERE id = ?";
         return $this->db->execute($sql, [$hashedPassword, $userId]);
+    }
+    
+    /**
+     * Actualiza el perfil del usuario
+     */
+    public function updateProfile($userId, $nombre, $email) {
+        $sql = "UPDATE usuarios SET nombre = ?, email = ? WHERE id = ?";
+        try {
+            return $this->db->execute($sql, [$nombre, $email, $userId]);
+        } catch (Exception $e) {
+            return false;
+        }
     }
     
     /**
