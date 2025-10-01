@@ -475,8 +475,12 @@ unset($_SESSION['error'], $_SESSION['errors']);
         
         <!-- User Profile -->
         <div class="user-profile">
-            <a href="#" class="nav-link">
-                <i class="fas fa-user-circle"></i> Leslie Lugo
+            <div class="user-info">
+                <div class="user-name"><i class="fas fa-user-circle me-2"></i> <?php echo htmlspecialchars($currentUser['nombre']); ?></div>
+                <div class="user-role"><?php echo htmlspecialchars($currentUser['rol']); ?></div>
+            </div>
+            <a href="<?php echo BASE_URL; ?>/mi-perfil.php" class="nav-link">
+                <i class="fas fa-user-cog"></i> Mi Perfil
             </a>
             <a href="#" class="nav-link" id="logout-btn">
                 <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
