@@ -562,7 +562,7 @@ unset($_SESSION['success'], $_SESSION['error']);
             <a href="<?php echo BASE_URL; ?>/nuevo-producto.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nuevo Producto
             </a>
-            <a href="<?php echo BASE_URL; ?>/registro-produccion.php" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/registro-produccion.php" class="nav-link active">
                 <i class="fas fa-clipboard-list"></i> Registro de Producción
                 <span class="nav-badge">3</span>
             </a>

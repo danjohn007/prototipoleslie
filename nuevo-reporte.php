@@ -418,7 +418,7 @@ unset($_SESSION['success'], $_SESSION['error']);
             <a href="<?php echo BASE_URL; ?>/analitica-reportes.php" class="nav-link">
                 <i class="fas fa-chart-bar"></i> Analítica y Reportes
             </a>
-            <a href="<?php echo BASE_URL; ?>/nuevo-reporte.php" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/nuevo-reporte.php" class="nav-link active" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nuevo Reporte
             </a>
             <a href="<?php echo BASE_URL; ?>/gestion-clientes.php" class="nav-link">

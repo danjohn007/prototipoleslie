@@ -408,7 +408,7 @@ unset($_SESSION['success'], $_SESSION['error']);
             <a href="<?php echo BASE_URL; ?>/experiencia-cliente.php" class="nav-link">
                 <i class="fas fa-smile"></i> Experiencia del Cliente
             </a>
-            <a href="<?php echo BASE_URL; ?>/enviar-encuesta.php" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/enviar-encuesta.php" class="nav-link active" style="padding-left: 40px;">
                 <i class="fas fa-envelope"></i> Enviar Encuesta
             </a>
             <a href="<?php echo BASE_URL; ?>/analitica-reportes.php" class="nav-link">

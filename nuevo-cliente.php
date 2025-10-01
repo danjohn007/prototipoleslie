@@ -448,7 +448,7 @@ unset($_SESSION['success'], $_SESSION['error']);
                 <i class="fas fa-users"></i> Gestión de Clientes
                 <span class="nav-badge">234</span>
             </a>
-            <a href="<?php echo BASE_URL; ?>/nuevo-cliente.php" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/nuevo-cliente.php" class="nav-link active" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nuevo Cliente
             </a>
             <a href="<?php echo BASE_URL; ?>/administracion-financiera.php" class="nav-link">
