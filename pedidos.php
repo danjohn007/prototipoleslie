@@ -490,87 +490,10 @@ unset($_SESSION['success'], $_SESSION['error'], $_SESSION['errors']);
             }
         }
     </style>
+    <?php include __DIR__ . '/app/includes/sidebar-styles.php'; ?>
 </head>
 <body>
-    <!-- Overlay para menú móvil -->
-    <div class="sidebar-overlay"></div>
-    
-    <!-- Botón hamburguesa para móvil -->
-    <button class="hamburger-btn">
-        <i class="fas fa-bars"></i>
-    </button>
-    
-    <!-- Sidebar Navigation -->
-    <div class="sidebar">
-        <div class="brand-header">
-            <div class="brand-title">QUESOS LESLIE</div>
-            <div class="brand-subtitle">PEDIDOS</div>
-        </div>
-        
-        <!-- MÓDULOS DEL SISTEMA -->
-        <div class="nav-section">
-            <div class="nav-section-title">MÓDULOS</div>
-            <a href="dashboard.php" class="nav-link">
-                <i class="fas fa-chart-pie"></i> Dashboard
-            </a>
-            <a href="produccion.php" class="nav-link">
-                <i class="fas fa-industry"></i> Producción
-            </a>
-            <a href="nuevo-lote.php" class="nav-link" style="padding-left: 40px;">
-                <i class="fas fa-plus-circle"></i> Nuevo Lote
-            </a>
-            <a href="inventario.php" class="nav-link">
-                <i class="fas fa-boxes"></i> Gestión de Inventario
-            </a>
-            <a href="nuevo-producto.php" class="nav-link" style="padding-left: 40px;">
-                <i class="fas fa-plus-circle"></i> Nuevo Producto
-            </a>
-            <a href="pedidos.php" class="nav-link active">
-                <i class="fas fa-shopping-cart"></i> Gestión de Pedidos
-                <span class="nav-badge"><?php echo count($orders); ?></span>
-            </a>
-            <a href="nuevo-pedido.php" class="nav-link" style="padding-left: 40px;">
-                <i class="fas fa-plus-circle"></i> Nuevo Pedido
-            </a>
-            <a href="ventas-punto.php" class="nav-link">
-                <i class="fas fa-store"></i> Ventas en Punto
-            </a>
-            <a href="optimizacion-logistica.php" class="nav-link">
-                <i class="fas fa-route"></i> Optimización Logística
-            </a>
-            <a href="nueva-ruta.php" class="nav-link" style="padding-left: 40px;">
-                <i class="fas fa-plus-circle"></i> Nueva Ruta
-            </a>
-            <a href="control-retornos.php" class="nav-link">
-                <i class="fas fa-undo-alt"></i> Control de Retornos
-            </a>
-            <a href="registrar-retorno.php" class="nav-link" style="padding-left: 40px;">
-                <i class="fas fa-plus-circle"></i> Registrar Retorno
-            </a>
-            <a href="experiencia-cliente.php" class="nav-link">
-                <i class="fas fa-smile"></i> Experiencia del Cliente
-            </a>
-            <a href="analitica-reportes.php" class="nav-link">
-                <i class="fas fa-chart-bar"></i> Analítica y Reportes
-            </a>
-            <a href="<?php echo BASE_URL; ?>/gestion-clientes.php" class="nav-link">
-                <i class="fas fa-users"></i> Gestión de Clientes
-            </a>
-            <a href="<?php echo BASE_URL; ?>/administracion-financiera.php" class="nav-link">
-                <i class="fas fa-dollar-sign"></i> Administración Financiera
-            </a>
-        </div>
-        
-        <!-- User Profile -->
-        <div class="user-profile">
-            <a href="#" class="nav-link">
-                <i class="fas fa-user-circle"></i> <?php echo htmlspecialchars($currentUser['nombre']); ?>
-            </a>
-            <a href="?action=logout" class="nav-link" id="logout-btn">
-                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-            </a>
-        </div>
-    </div>
+    <?php include __DIR__ . '/app/includes/sidebar.php'; ?>
     
     <!-- Main Content Area -->
     <div class="main-content">

@@ -239,52 +239,10 @@ $recentProduction = $productionModel->getRecent(5);
             }
         }
     </style>
+    <?php include __DIR__ . '/app/includes/sidebar-styles.php'; ?>
 </head>
 <body>
-    <!-- Sidebar Navigation -->
-    <div class="sidebar">
-        <div class="brand-header">
-            <div class="brand-title">QUESOS LESLIE</div>
-            <div class="brand-subtitle">SISTEMA</div>
-        </div>
-        
-        <!-- MÓDULOS DEL SISTEMA -->
-        <div class="nav-section">
-            <div class="nav-section-title">MÓDULOS</div>
-            <a href="<?php echo BASE_URL; ?>/dashboard.php" class="nav-link">
-                <i class="fas fa-chart-pie"></i> Dashboard
-            </a>
-            <a href="<?php echo BASE_URL; ?>/produccion.php" class="nav-link">
-                <i class="fas fa-industry"></i> Producción
-            </a>
-            <a href="<?php echo BASE_URL; ?>/inventario.php" class="nav-link">
-                <i class="fas fa-boxes"></i> Inventario
-            </a>
-            <a href="<?php echo BASE_URL; ?>/pedidos.php" class="nav-link">
-                <i class="fas fa-shopping-cart"></i> Pedidos
-            </a>
-            <a href="<?php echo BASE_URL; ?>/optimizacion-logistica.php" class="nav-link">
-                <i class="fas fa-route"></i> Logística
-            </a>
-            <a href="<?php echo BASE_URL; ?>/experiencia-cliente.php" class="nav-link">
-                <i class="fas fa-users"></i> Clientes
-            </a>
-            <a href="<?php echo BASE_URL; ?>/analitica-reportes.php" class="nav-link">
-                <i class="fas fa-chart-bar"></i> Analítica
-            </a>
-        </div>
-        
-        <!-- User Profile -->
-        <div class="user-profile">
-            <div class="user-info">
-                <div class="user-name"><i class="fas fa-user-circle me-2"></i> <?php echo htmlspecialchars($currentUser['nombre']); ?></div>
-                <div class="user-role"><?php echo htmlspecialchars($currentUser['rol']); ?></div>
-            </div>
-            <a href="<?php echo BASE_URL; ?>/index.php?action=logout" class="nav-link" onclick="return confirm('¿Está seguro que desea cerrar sesión?')">
-                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-            </a>
-        </div>
-    </div>
+    <?php include __DIR__ . '/app/includes/sidebar.php'; ?>
     
     <!-- Main Content Area -->
     <div class="main-content">
