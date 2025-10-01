@@ -583,8 +583,12 @@ $totalValue = $inventoryModel->getTotalValue();
         
         <!-- User Profile -->
         <div class="user-profile">
-            <a href="#" class="nav-link">
-                <i class="fas fa-user-circle"></i> <?php echo htmlspecialchars($currentUser['nombre']); ?>
+            <div class="user-info">
+                <div class="user-name"><i class="fas fa-user-circle me-2"></i> <?php echo htmlspecialchars($currentUser['nombre']); ?></div>
+                <div class="user-role"><?php echo htmlspecialchars($currentUser['rol']); ?></div>
+            </div>
+            <a href="<?php echo BASE_URL; ?>/mi-perfil.php" class="nav-link">
+                <i class="fas fa-user-cog"></i> Mi Perfil
             </a>
             <a href="index.php?action=logout" class="nav-link" id="logout-btn" onclick="return confirm('¿Está seguro que desea cerrar sesión?')">
                 <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
