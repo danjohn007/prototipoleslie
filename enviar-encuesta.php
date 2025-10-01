@@ -1,7 +1,7 @@
 <?php
 /**
- * Nueva Ruta
- * Formulario para crear una nueva ruta de entrega
+ * Enviar Encuesta
+ * Módulo con conexión a base de datos
  */
 
 // Cargar configuración
@@ -21,34 +21,21 @@ $authController->checkAuth();
 $userModel = new User();
 $currentUser = $userModel->getCurrentUser();
 
-// Procesar formulario si se envió
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $routeController = new RouteController();
-    $routeController->createRoute();
-    exit;
-}
-
-// Obtener datos para el formulario
-$drivers = $userModel->getByRole('logistica');
-if (empty($drivers)) {
-    // Si no hay conductores específicos, obtener todos los usuarios activos
-    $drivers = $userModel->getAll();
-}
-
-$orderModel = new Order();
-$pendingOrders = $orderModel->getByStatus('confirmado');
+// Obtener datos desde base de datos
+$clientModel = new Client();
+$items = $clientModel->getAll();
 
 // Mensajes de sesión
+$success = $_SESSION['success'] ?? null;
 $error = $_SESSION['error'] ?? null;
-$errors = $_SESSION['errors'] ?? [];
-unset($_SESSION['error'], $_SESSION['errors']);
+unset($_SESSION['success'], $_SESSION['error']);
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nueva Ruta - <?php echo APP_NAME; ?></title>
+    <title>Enviar Encuesta - Quesos Leslie</title>
     <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@300;400;500&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -316,13 +303,19 @@ unset($_SESSION['error'], $_SESSION['errors']);
             }
         }
         
-        .route-card {
-            padding: 15px;
-            border-left: 4px solid var(--transport);
-            background-color: rgba(26, 188, 156, 0.05);
+        .rating-stars {
+            color: var(--education);
+            font-size: 18px;
         }
         
-        .route-status {
+        .feedback-card {
+            padding: 15px;
+            border-left: 4px solid var(--human-rights);
+            background-color: rgba(52, 152, 219, 0.05);
+            margin-bottom: 15px;
+        }
+        
+        .sentiment-badge {
             display: inline-block;
             padding: 4px 12px;
             border-radius: 12px;
@@ -331,17 +324,17 @@ unset($_SESSION['error'], $_SESSION['errors']);
             text-transform: uppercase;
         }
         
-        .route-status.optimal {
+        .sentiment-positive {
             background-color: rgba(39, 174, 96, 0.1);
             color: var(--success);
         }
         
-        .route-status.warning {
+        .sentiment-neutral {
             background-color: rgba(255, 193, 7, 0.1);
             color: var(--warning);
         }
         
-        .route-status.critical {
+        .sentiment-negative {
             background-color: rgba(220, 53, 69, 0.1);
             color: var(--danger);
         }
@@ -360,65 +353,65 @@ unset($_SESSION['error'], $_SESSION['errors']);
     <div class="sidebar">
         <div class="brand-header">
             <div class="brand-title">QUESOS LESLIE</div>
-            <div class="brand-subtitle">OPTIMIZACIÓN</div>
+            <div class="brand-subtitle">EXPERIENCIA</div>
         </div>
         
                 <!-- MÓDULOS DEL SISTEMA -->
         <div class="nav-section">
             <div class="nav-section-title">MÓDULOS</div>
-            <a href="dashboard.php" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/dashboard.php" class="nav-link">
                 <i class="fas fa-chart-pie"></i> Dashboard
             </a>
-            <a href="produccion.php" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/produccion.php" class="nav-link">
                 <i class="fas fa-industry"></i> Producción
                 <span class="nav-badge">15</span>
             </a>
-            <a href="nuevo-lote.php" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/nuevo-lote.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nuevo Lote
             </a>
-            <a href="inventario.php" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/inventario.php" class="nav-link">
                 <i class="fas fa-boxes"></i> Gestión de Inventario
                 <span class="nav-badge">8</span>
             </a>
-            <a href="nuevo-producto.php" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/nuevo-producto.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nuevo Producto
             </a>
             <a href="<?php echo BASE_URL; ?>/registro-produccion.php" class="nav-link">
                 <i class="fas fa-clipboard-list"></i> Registro de Producción
                 <span class="nav-badge">3</span>
             </a>
-            <a href="pedidos.php" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/pedidos.php" class="nav-link">
                 <i class="fas fa-shopping-cart"></i> Gestión de Pedidos
                 <span class="nav-badge">47</span>
             </a>
-            <a href="nuevo-pedido.php" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/nuevo-pedido.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nuevo Pedido
             </a>
-            <a href="ventas-punto.php" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/ventas-punto.php" class="nav-link">
                 <i class="fas fa-store"></i> Ventas en Punto
                 <span class="nav-badge">12</span>
             </a>
-            <a href="optimizacion-logistica.php" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/optimizacion-logistica.php" class="nav-link">
                 <i class="fas fa-route"></i> Optimización Logística
                 <span class="nav-badge">5</span>
             </a>
-            <a href="nueva-ruta.php" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/nueva-ruta.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nueva Ruta
             </a>
-            <a href="control-retornos.php" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/control-retornos.php" class="nav-link">
                 <i class="fas fa-undo-alt"></i> Control de Retornos
                 <span class="nav-badge">7</span>
             </a>
-            <a href="registrar-retorno.php" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/registrar-retorno.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Registrar Retorno
             </a>
-            <a href="experiencia-cliente.php" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/experiencia-cliente.php" class="nav-link">
                 <i class="fas fa-smile"></i> Experiencia del Cliente
             </a>
-            <a href="<?php echo BASE_URL; ?>/enviar-encuesta.php" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/enviar-encuesta.php" class="nav-link active" style="padding-left: 40px;">
                 <i class="fas fa-envelope"></i> Enviar Encuesta
             </a>
-            <a href="analitica-reportes.php" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/analitica-reportes.php" class="nav-link">
                 <i class="fas fa-chart-bar"></i> Analítica y Reportes
             </a>
             <a href="<?php echo BASE_URL; ?>/nuevo-reporte.php" class="nav-link" style="padding-left: 40px;">
@@ -439,152 +432,132 @@ unset($_SESSION['error'], $_SESSION['errors']);
             </a>
         </div>
         
-        <!-- User Profile -->
+                <!-- User Profile -->
         <div class="user-profile">
-            <a href="#" class="nav-link">
-                <i class="fas fa-user-circle"></i> Leslie Lugo
-            </a>
-            <a href="#" class="nav-link" id="logout-btn">
+            <div class="user-info">
+                <div class="user-name"><i class="fas fa-user-circle me-2"></i> <?php echo htmlspecialchars($currentUser['nombre']); ?></div>
+                <div class="user-role"><?php echo htmlspecialchars($currentUser['rol']); ?></div>
+            </div>
+            <a href="<?php echo BASE_URL; ?>/index.php?action=logout" class="nav-link" onclick="return confirm('¿Está seguro que desea cerrar sesión?')">
                 <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
             </a>
         </div>
     </div>
-    
-    <!-- Main Content Area -->
-    <div class="main-content">
-        <div class="page-header">
-            <h1 class="page-title">Nueva Ruta</h1>
-            <div>
-                <button class="btn btn-primary me-2">
-                    <i class="fas fa-save"></i> Guardar Ruta
-                </button>
-                <button class="btn btn-secondary">
-                    <i class="fas fa-times"></i> Cancelar
-                </button>
-            </div>
-        </div>
-        
-        <!-- KPI Cards -->
-        <div class="row">
             <div class="col-md-3">
                 <div class="card kpi-card">
-                    <div class="kpi-label">Rutas Activas</div>
-                    <div class="kpi-value" style="color: var(--transport);">12</div>
+                    <div class="kpi-label">NPS Score</div>
+                    <div class="kpi-value" style="color: var(--human-rights);">72</div>
                     <div class="kpi-trend up">
-                        <i class="fas fa-arrow-up"></i> 2 rutas más vs ayer
+                        <i class="fas fa-arrow-up"></i> 5 puntos más
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card kpi-card">
-                    <div class="kpi-label">Eficiencia Promedio</div>
-                    <div class="kpi-value" style="color: var(--success);">87%</div>
+                    <div class="kpi-label">Encuestas Este Mes</div>
+                    <div class="kpi-value" style="color: var(--equity);">156</div>
                     <div class="kpi-trend up">
-                        <i class="fas fa-arrow-up"></i> 5% vs semana anterior
+                        <i class="fas fa-arrow-up"></i> 23% más vs mes pasado
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card kpi-card">
-                    <div class="kpi-label">Tiempo Promedio Entrega</div>
-                    <div class="kpi-value" style="color: var(--human-rights);">45 min</div>
+                    <div class="kpi-label">Tiempo Respuesta Promedio</div>
+                    <div class="kpi-value" style="color: var(--environment);">4.2h</div>
                     <div class="kpi-trend down">
-                        <i class="fas fa-arrow-down"></i> 8 min menos vs semana anterior
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card kpi-card">
-                    <div class="kpi-label">Ahorro Combustible</div>
-                    <div class="kpi-value" style="color: var(--environment);">$1,250</div>
-                    <div class="kpi-trend up">
-                        <i class="fas fa-arrow-up"></i> $320 más vs mes pasado
+                        <i class="fas fa-arrow-down"></i> 1.5h menos
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Rutas del Día -->
+        <!-- Feedback Reciente -->
         <div class="row">
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title">Rutas del Día</div>
-                        <button class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-map"></i> Ver Mapa
-                        </button>
+                        <div class="card-title">Feedback Reciente de Clientes</div>
+                        <div>
+                            <select class="form-select form-select-sm" style="width: 150px;">
+                                <option>Todos</option>
+                                <option>Positivo</option>
+                                <option>Neutral</option>
+                                <option>Negativo</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="card-body">
-                        <div class="route-card mb-3">
+                        <div class="feedback-card">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div>
-                                    <h6 class="mb-1"><i class="fas fa-truck text-primary me-2"></i>Ruta Norte - Mañana</h6>
-                                    <small class="text-muted">Conductor: Juan Pérez</small>
+                                    <h6 class="mb-1">Supermercado La Esperanza</h6>
+                                    <div class="rating-stars mb-1">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
                                 </div>
-                                <span class="route-status optimal">Óptima</span>
+                                <span class="sentiment-badge sentiment-positive">Positivo</span>
                             </div>
-                            <div class="row mt-3">
-                                <div class="col-4">
-                                    <small class="text-muted">Paradas</small>
-                                    <div class="fw-bold">8 de 8</div>
-                                </div>
-                                <div class="col-4">
-                                    <small class="text-muted">Distancia</small>
-                                    <div class="fw-bold">42 km</div>
-                                </div>
-                                <div class="col-4">
-                                    <small class="text-muted">Tiempo Estimado</small>
-                                    <div class="fw-bold">2.5 hrs</div>
-                                </div>
-                            </div>
+                            <p class="mb-2">"Excelente calidad de productos y entrega siempre puntual. Los quesos frescos son los mejores de la zona."</p>
+                            <small class="text-muted">Hace 2 horas</small>
                         </div>
                         
-                        <div class="route-card mb-3">
+                        <div class="feedback-card">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div>
-                                    <h6 class="mb-1"><i class="fas fa-truck text-primary me-2"></i>Ruta Centro - Mañana</h6>
-                                    <small class="text-muted">Conductor: María González</small>
+                                    <h6 class="mb-1">Tienda Don Pepe</h6>
+                                    <div class="rating-stars mb-1">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="far fa-star"></i>
+                                    </div>
                                 </div>
-                                <span class="route-status warning">En Progreso</span>
+                                <span class="sentiment-badge sentiment-positive">Positivo</span>
                             </div>
-                            <div class="row mt-3">
-                                <div class="col-4">
-                                    <small class="text-muted">Paradas</small>
-                                    <div class="fw-bold">5 de 12</div>
-                                </div>
-                                <div class="col-4">
-                                    <small class="text-muted">Distancia</small>
-                                    <div class="fw-bold">35 km</div>
-                                </div>
-                                <div class="col-4">
-                                    <small class="text-muted">Tiempo Estimado</small>
-                                    <div class="fw-bold">3.0 hrs</div>
-                                </div>
-                            </div>
+                            <p class="mb-2">"Buenos productos, aunque me gustaría tener más variedad en presentaciones pequeñas."</p>
+                            <small class="text-muted">Hace 5 horas</small>
                         </div>
                         
-                        <div class="route-card">
+                        <div class="feedback-card" style="border-left-color: var(--warning);">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div>
-                                    <h6 class="mb-1"><i class="fas fa-truck text-primary me-2"></i>Ruta Sur - Tarde</h6>
-                                    <small class="text-muted">Conductor: Carlos Ramírez</small>
+                                    <h6 class="mb-1">Minimarket El Trébol</h6>
+                                    <div class="rating-stars mb-1">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="far fa-star"></i>
+                                        <i class="far fa-star"></i>
+                                    </div>
                                 </div>
-                                <span class="route-status optimal">Óptima</span>
+                                <span class="sentiment-badge sentiment-neutral">Neutral</span>
                             </div>
-                            <div class="row mt-3">
-                                <div class="col-4">
-                                    <small class="text-muted">Paradas</small>
-                                    <div class="fw-bold">0 de 10</div>
+                            <p class="mb-2">"La calidad es buena pero tuvieron un retraso en la entrega de esta semana."</p>
+                            <small class="text-muted">Hace 1 día</small>
+                        </div>
+                        
+                        <div class="feedback-card" style="border-left-color: var(--success);">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-1">Bodega Central</h6>
+                                    <div class="rating-stars mb-1">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
                                 </div>
-                                <div class="col-4">
-                                    <small class="text-muted">Distancia</small>
-                                    <div class="fw-bold">48 km</div>
-                                </div>
-                                <div class="col-4">
-                                    <small class="text-muted">Tiempo Estimado</small>
-                                    <div class="fw-bold">2.8 hrs</div>
-                                </div>
+                                <span class="sentiment-badge sentiment-positive">Positivo</span>
                             </div>
+                            <p class="mb-2">"Mis clientes están muy contentos con los quesos. La relación calidad-precio es excelente."</p>
+                            <small class="text-muted">Hace 1 día</small>
                         </div>
                     </div>
                 </div>
@@ -593,62 +566,102 @@ unset($_SESSION['error'], $_SESSION['errors']);
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title">Recomendaciones de Optimización</div>
+                        <div class="card-title">Distribución de Sentimientos</div>
                     </div>
                     <div class="card-body">
-                        <div class="alert alert-success mb-3">
-                            <i class="fas fa-lightbulb me-2"></i>
-                            <strong>Consolidar entregas</strong>
-                            <p class="mb-0 mt-1 small">3 entregas en la misma zona pueden agruparse para ahorrar 15 km</p>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small>😊 Positivo</small>
+                                <small class="fw-bold">78%</small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: 78%"></div>
+                            </div>
                         </div>
                         
-                        <div class="alert alert-info mb-3">
-                            <i class="fas fa-clock me-2"></i>
-                            <strong>Ajustar horarios</strong>
-                            <p class="mb-0 mt-1 small">Iniciar Ruta Centro 30 min antes reduce tráfico en 20%</p>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small>😐 Neutral</small>
+                                <small class="fw-bold">15%</small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: 15%"></div>
+                            </div>
                         </div>
                         
-                        <div class="alert alert-warning mb-0">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>Revisar capacidad</strong>
-                            <p class="mb-0 mt-1 small">Ruta Norte al 98% de capacidad. Considerar redistribuir carga</p>
+                        <div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <small>😞 Negativo</small>
+                                <small class="fw-bold">7%</small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-danger" style="width: 7%"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title">Estadísticas Semanales</div>
+                        <div class="card-title">Aspectos Mejor Valorados</div>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <small>Entregas Completadas</small>
-                                <small class="fw-bold">168/172</small>
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <small>Calidad del Producto</small>
                             </div>
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-success" style="width: 98%"></div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-success" style="width: 95%"></div>
                             </div>
                         </div>
                         
                         <div class="mb-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <small>Eficiencia de Rutas</small>
-                                <small class="fw-bold">87%</small>
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <small>Atención al Cliente</small>
                             </div>
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-info" style="width: 87%"></div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-success" style="width: 88%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <small>Puntualidad</small>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-success" style="width: 82%"></div>
                             </div>
                         </div>
                         
                         <div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <small>Optimización de Combustible</small>
-                                <small class="fw-bold">92%</small>
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <small>Precio</small>
                             </div>
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-primary" style="width: 92%"></div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-success" style="width: 75%"></div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Áreas de Mejora</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning mb-2 small">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Variedad de productos</strong>
+                            <p class="mb-0 mt-1">15 clientes solicitaron más opciones</p>
+                        </div>
+                        <div class="alert alert-info mb-0 small">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Horarios de entrega</strong>
+                            <p class="mb-0 mt-1">8 clientes pidieron flexibilidad</p>
                         </div>
                     </div>
                 </div>
