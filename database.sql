@@ -108,17 +108,26 @@ CREATE TABLE IF NOT EXISTS produccion (
     id INT AUTO_INCREMENT PRIMARY KEY,
     numero_lote VARCHAR(50) UNIQUE NOT NULL,
     producto_id INT NOT NULL,
-    cantidad_producida INT NOT NULL,
+    cantidad_producida DECIMAL(10, 2) NOT NULL,
+    tipo_produccion ENUM('granel', 'pieza', 'paquete') DEFAULT 'granel',
     fecha_produccion DATE NOT NULL,
     fecha_vencimiento DATE,
-    estado ENUM('en_proceso', 'completado', 'inspeccion', 'aprobado') DEFAULT 'en_proceso',
+    estado ENUM('en_proceso', 'completado', 'inspeccion', 'aprobado', 'rechazado') DEFAULT 'en_proceso',
+    costo_materias_primas DECIMAL(10, 2) DEFAULT 0,
+    costo_mano_obra DECIMAL(10, 2) DEFAULT 0,
+    otros_costos DECIMAL(10, 2) DEFAULT 0,
+    costo_total DECIMAL(10, 2) DEFAULT 0,
     responsable_id INT,
+    turno ENUM('matutino', 'vespertino', 'nocturno') DEFAULT 'matutino',
     observaciones TEXT,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE RESTRICT,
     FOREIGN KEY (responsable_id) REFERENCES usuarios(id) ON DELETE SET NULL,
     INDEX idx_numero_lote (numero_lote),
     INDEX idx_estado (estado),
-    INDEX idx_fecha_produccion (fecha_produccion)
+    INDEX idx_fecha_produccion (fecha_produccion),
+    INDEX idx_producto (producto_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================

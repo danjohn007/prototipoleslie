@@ -55,18 +55,36 @@ class Production {
      * Crea un nuevo lote de producción
      */
     public function create($data) {
-        $sql = "INSERT INTO produccion (numero_lote, producto_id, cantidad_producida, 
-                fecha_produccion, fecha_vencimiento, estado, responsable_id, observaciones) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO produccion (numero_lote, producto_id, cantidad_producida, tipo_produccion,
+                fecha_produccion, fecha_vencimiento, estado, 
+                costo_materias_primas, costo_mano_obra, otros_costos, costo_total,
+                responsable_id, turno, observaciones) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        // Calcular turno basado en la hora actual
+        $hora = date('H');
+        if ($hora >= 6 && $hora < 14) {
+            $turno = 'matutino';
+        } elseif ($hora >= 14 && $hora < 22) {
+            $turno = 'vespertino';
+        } else {
+            $turno = 'nocturno';
+        }
         
         $result = $this->db->execute($sql, [
             $data['numero_lote'],
             $data['producto_id'],
             $data['cantidad_producida'],
+            $data['tipo_produccion'] ?? 'granel',
             $data['fecha_produccion'],
             $data['fecha_vencimiento'] ?? null,
             $data['estado'] ?? 'en_proceso',
+            $data['costo_materias_primas'] ?? 0,
+            $data['costo_mano_obra'] ?? 0,
+            $data['otros_costos'] ?? 0,
+            $data['costo_total'] ?? 0,
             $data['responsable_id'] ?? null,
+            $data['turno'] ?? $turno,
             $data['observaciones'] ?? null
         ]);
         
