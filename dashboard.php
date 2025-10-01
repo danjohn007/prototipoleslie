@@ -244,10 +244,10 @@ $currentUser = $userModel->getCurrentUser();
             <a href="<?php echo BASE_URL; ?>/inventario.php" class="nav-link">
                 <i class="fas fa-boxes"></i> Inventario
             </a>
-            <a href="<?php echo BASE_URL; ?>/pedidos.html" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/pedidos.php" class="nav-link">
                 <i class="fas fa-shopping-cart"></i> Pedidos
             </a>
-            <a href="<?php echo BASE_URL; ?>/optimizacion-logistica.html" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/optimizacion-logistica.php" class="nav-link">
                 <i class="fas fa-route"></i> Logística
             </a>
             <a href="<?php echo BASE_URL; ?>/experiencia-cliente.html" class="nav-link">

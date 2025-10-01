@@ -224,3 +224,10 @@ function sanitize_array($array) {
     }
     return $clean;
 }
+
+/**
+ * Genera un número de retorno único
+ */
+function generate_return_number($prefix = 'RET') {
+    return $prefix . '-' . date('Y') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+}
