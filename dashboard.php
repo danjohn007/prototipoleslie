@@ -238,10 +238,10 @@ $currentUser = $userModel->getCurrentUser();
             <a href="<?php echo BASE_URL; ?>/dashboard.php" class="nav-link">
                 <i class="fas fa-chart-pie"></i> Dashboard
             </a>
-            <a href="<?php echo BASE_URL; ?>/produccion.html" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/produccion.php" class="nav-link">
                 <i class="fas fa-industry"></i> Producción
             </a>
-            <a href="<?php echo BASE_URL; ?>/inventario.html" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/inventario.php" class="nav-link">
                 <i class="fas fa-boxes"></i> Inventario
             </a>
             <a href="<?php echo BASE_URL; ?>/pedidos.html" class="nav-link">
@@ -370,7 +370,7 @@ $currentUser = $userModel->getCurrentUser();
                             <a href="<?php echo BASE_URL; ?>/test-connection.php" class="btn btn-primary btn-lg me-2">
                                 <i class="fas fa-vial me-2"></i> Test de Conexión
                             </a>
-                            <a href="<?php echo BASE_URL; ?>/produccion.html" class="btn btn-success btn-lg">
+                            <a href="<?php echo BASE_URL; ?>/produccion.php" class="btn btn-success btn-lg">
                                 <i class="fas fa-industry me-2"></i> Ver Producción
                             </a>
                         </div>
