@@ -355,69 +355,52 @@ unset($_SESSION['success'], $_SESSION['error']);
                 <!-- MÓDULOS DEL SISTEMA -->
         <div class="nav-section">
             <div class="nav-section-title">MÓDULOS</div>
-            <a href="dashboard.html" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/dashboard.php" class="nav-link">
                 <i class="fas fa-chart-pie"></i> Dashboard
             </a>
-            <a href="produccion.html" class="nav-link">
+            <a href="<?php echo BASE_URL; ?>/produccion.php" class="nav-link">
                 <i class="fas fa-industry"></i> Producción
-                <span class="nav-badge">15</span>
             </a>
-            <a href="nuevo-lote.html" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/nuevo-lote.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nuevo Lote
             </a>
-            <a href="inventario.html" class="nav-link">
-                <i class="fas fa-boxes"></i> Gestión de Inventario
-                <span class="nav-badge">8</span>
+            <a href="<?php echo BASE_URL; ?>/inventario.php" class="nav-link">
+                <i class="fas fa-boxes"></i> Inventario
             </a>
-            <a href="nuevo-producto.html" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/nuevo-producto.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nuevo Producto
             </a>
-            <a href="registro-produccion.html" class="nav-link">
-                <i class="fas fa-clipboard-list"></i> Registro de Producción
-                <span class="nav-badge">3</span>
+            <a href="<?php echo BASE_URL; ?>/pedidos.php" class="nav-link">
+                <i class="fas fa-shopping-cart"></i> Pedidos
             </a>
-            <a href="pedidos.html" class="nav-link">
-                <i class="fas fa-shopping-cart"></i> Gestión de Pedidos
-                <span class="nav-badge">47</span>
-            </a>
-            <a href="nuevo-pedido.html" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/nuevo-pedido.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nuevo Pedido
             </a>
-            <a href="ventas-punto.html" class="nav-link">
-                <i class="fas fa-store"></i> Ventas en Punto
-                <span class="nav-badge">12</span>
+            <a href="<?php echo BASE_URL; ?>/ventas-punto.php" class="nav-link">
+                <i class="fas fa-store"></i> Ventas
             </a>
-            <a href="optimizacion-logistica.html" class="nav-link">
-                <i class="fas fa-route"></i> Optimización Logística
-                <span class="nav-badge">5</span>
+            <a href="<?php echo BASE_URL; ?>/optimizacion-logistica.php" class="nav-link active">
+                <i class="fas fa-route"></i> Logística
             </a>
-            <a href="nueva-ruta.html" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/nueva-ruta.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nueva Ruta
             </a>
-            <a href="control-retornos.html" class="nav-link">
-                <i class="fas fa-undo-alt"></i> Control de Retornos
-                <span class="nav-badge">7</span>
+            <a href="<?php echo BASE_URL; ?>/control-retornos.php" class="nav-link">
+                <i class="fas fa-undo-alt"></i> Retornos
             </a>
-            <a href="registrar-retorno.html" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/registrar-retorno.php" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Registrar Retorno
             </a>
-            <a href="experiencia-cliente.html" class="nav-link">
-                <i class="fas fa-smile"></i> Experiencia del Cliente
+            <a href="<?php echo BASE_URL; ?>/experiencia-cliente.php" class="nav-link">
+                <i class="fas fa-users"></i> Clientes
             </a>
-            <a href="enviar-encuesta.html" class="nav-link" style="padding-left: 40px;">
-                <i class="fas fa-envelope"></i> Enviar Encuesta
+            <a href="<?php echo BASE_URL; ?>/analitica-reportes.php" class="nav-link">
+                <i class="fas fa-chart-bar"></i> Analítica
             </a>
-            <a href="analitica-reportes.html" class="nav-link">
-                <i class="fas fa-chart-bar"></i> Analítica y Reportes
+            <a href="<?php echo BASE_URL; ?>/gestion-clientes.html" class="nav-link">
+                <i class="fas fa-address-book"></i> Gestión Clientes
             </a>
-            <a href="nuevo-reporte.html" class="nav-link" style="padding-left: 40px;">
-                <i class="fas fa-plus-circle"></i> Nuevo Reporte
-            </a>
-            <a href="gestion-clientes.html" class="nav-link">
-                <i class="fas fa-users"></i> Gestión de Clientes
-                <span class="nav-badge">234</span>
-            </a>
-            <a href="nuevo-cliente.html" class="nav-link" style="padding-left: 40px;">
+            <a href="<?php echo BASE_URL; ?>/nuevo-cliente.html" class="nav-link" style="padding-left: 40px;">
                 <i class="fas fa-plus-circle"></i> Nuevo Cliente
             </a>
             <a href="administracion-financiera.html" class="nav-link">
