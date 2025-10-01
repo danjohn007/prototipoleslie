@@ -75,6 +75,43 @@ try {
                     'data' => $products,
                     'count' => count($products)
                 ]);
+                
+            } elseif ($action === 'costs' && isset($_GET['producto_id']) && isset($_GET['cantidad'])) {
+                // Calcular costos estimados para producción
+                $producto_id = (int)$_GET['producto_id'];
+                $cantidad = (float)$_GET['cantidad'];
+                
+                $product = $productModel->getById($producto_id);
+                if ($product) {
+                    // Fórmulas de cálculo de costos (ajustar según tu negocio)
+                    $precio_unitario = $product['precio_unitario'];
+                    
+                    // Costos estimados basados en el precio del producto
+                    $costo_materias_primas = $cantidad * $precio_unitario * 0.6; // 60% materias primas
+                    $costo_mano_obra = $cantidad * 8; // $8 por unidad producida
+                    $otros_costos = $cantidad * 2; // $2 por unidad otros costos
+                    
+                    $costo_total = $costo_materias_primas + $costo_mano_obra + $otros_costos;
+                    $costo_unitario = $cantidad > 0 ? $costo_total / $cantidad : 0;
+                    
+                    echo json_encode([
+                        'success' => true,
+                        'data' => [
+                            'producto' => $product['nombre'],
+                            'cantidad' => $cantidad,
+                            'costs' => [
+                                'materias_primas' => round($costo_materias_primas, 2),
+                                'mano_obra' => round($costo_mano_obra, 2),
+                                'otros_costos' => round($otros_costos, 2),
+                                'total' => round($costo_total, 2),
+                                'unitario' => round($costo_unitario, 2)
+                            ]
+                        ]
+                    ]);
+                } else {
+                    http_response_code(404);
+                    echo json_encode(['error' => 'Producto no encontrado']);
+                }
             }
             break;
             

@@ -744,26 +744,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <span class="text-muted">Lote <?php echo $numero_lote; ?></span>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="nuevo-lote.php">
+                        <form method="POST" action="nuevo-lote.php" id="batch-form">
+                        <!-- Campo oculto para tipo de producción -->
+                        <input type="hidden" name="tipo_produccion" id="tipo_produccion" value="granel">
+                        
                         <!-- Tipo de Producción -->
                         <div class="form-section">
                             <h6 class="mb-3">Tipo de Producción</h6>
                             <div class="production-type">
-                                <div class="type-card selected">
+                                <div class="type-card selected" data-type="granel">
                                     <div class="type-icon">
                                         <i class="fas fa-weight"></i>
                                     </div>
                                     <h6>A Granel</h6>
                                     <small class="text-muted">Por peso total</small>
                                 </div>
-                                <div class="type-card">
+                                <div class="type-card" data-type="pieza">
                                     <div class="type-icon">
                                         <i class="fas fa-cube"></i>
                                     </div>
                                     <h6>Por Pieza</h6>
                                     <small class="text-muted">Unidades individuales</small>
                                 </div>
-                                <div class="type-card">
+                                <div class="type-card" data-type="paquete">
                                     <div class="type-icon">
                                         <i class="fas fa-box"></i>
                                     </div>
@@ -779,10 +782,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label">Producto *</label>
-                                    <select class="form-select" name="producto_id" required>
+                                    <select class="form-select" name="producto_id" id="producto_id" required>
                                         <option value="">Seleccionar producto...</option>
                                         <?php foreach ($products as $product): ?>
-                                        <option value="<?php echo $product['id']; ?>">
+                                        <option value="<?php echo $product['id']; ?>" 
+                                                data-nombre="<?php echo htmlspecialchars($product['nombre']); ?>"
+                                                data-precio="<?php echo $product['precio_unitario']; ?>"
+                                                data-categoria="<?php echo $product['categoria']; ?>">
                                             <?php echo htmlspecialchars($product['nombre']); ?>
                                         </option>
                                         <?php endforeach; ?>
@@ -791,17 +797,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <div class="col-md-6">
                                     <label class="form-label">Cantidad *</label>
                                     <div class="input-group">
-                                        <input type="number" class="form-control" name="cantidad_producida" required min="1" step="0.01">
-                                        <span class="input-group-text">kg</span>
+                                        <input type="number" class="form-control" name="cantidad_producida" id="cantidad_producida" 
+                                               required min="1" step="0.01" placeholder="0">
+                                        <span class="input-group-text" id="unidad_medida">kg</span>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Fecha Producción *</label>
-                                    <input type="date" class="form-control" name="fecha_produccion" value="<?php echo date('Y-m-d'); ?>" required>
+                                    <input type="date" class="form-control" name="fecha_produccion" id="fecha_produccion" 
+                                           value="<?php echo date('Y-m-d'); ?>" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Fecha Vencimiento</label>
-                                    <input type="date" class="form-control" name="fecha_vencimiento">
+                                    <input type="date" class="form-control" name="fecha_vencimiento" id="fecha_vencimiento">
                                 </div>
                             </div>
                         </div>
@@ -883,36 +891,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="card-title">Resumen del Lote</div>
                     </div>
                     <div class="card-body">
-                        <div class="mb-3">
-                            <strong>Lote ID:</strong> #PR-231115<br>
-                            <strong>Producto:</strong> Queso Gouda<br>
-                            <strong>Cantidad:</strong> 50 kg<br>
-                            <strong>Fecha Prod:</strong> 15/11/2023<br>
-                            <strong>Fecha Cad:</strong> 15/02/2024
+                        <div class="mb-3" id="batch-summary">
+                            <strong>Lote ID:</strong> <span id="display-lote-id"><?php echo $numero_lote; ?></span><br>
+                            <strong>Producto:</strong> <span id="display-producto">No seleccionado</span><br>
+                            <strong>Cantidad:</strong> <span id="display-cantidad">0</span> <span id="display-unidad">kg</span><br>
+                            <strong>Fecha Prod:</strong> <span id="display-fecha-prod"><?php echo date('d/m/Y'); ?></span><br>
+                            <strong>Fecha Cad:</strong> <span id="display-fecha-cad">No especificada</span>
                         </div>
                         
-                        <div class="mb-3">
+                        <div class="mb-3" id="cost-breakdown">
                             <strong>Costos Estimados</strong>
                             <div class="d-flex justify-content-between mt-2">
-                                <span>Ingredientes:</span>
-                                <span>$1,505.00</span>
+                                <span>Materias Primas:</span>
+                                <span id="display-costo-materias">$0.00</span>
                             </div>
                             <div class="d-flex justify-content-between">
                                 <span>Mano de Obra:</span>
-                                <span>$450.00</span>
+                                <span id="display-costo-mano-obra">$0.00</span>
                             </div>
                             <div class="d-flex justify-content-between">
                                 <span>Otros Costos:</span>
-                                <span>$120.00</span>
+                                <span id="display-otros-costos">$0.00</span>
                             </div>
                             <hr>
                             <div class="d-flex justify-content-between">
                                 <strong>Costo Total:</strong>
-                                <strong>$2,075.00</strong>
+                                <strong id="display-costo-total">$0.00</strong>
                             </div>
                             <div class="d-flex justify-content-between">
-                                <strong>Costo por kg:</strong>
-                                <strong>$41.50</strong>
+                                <strong>Costo por <span id="display-unidad-costo">kg</span>:</strong>
+                                <strong id="display-costo-unitario">$0.00</strong>
                             </div>
                         </div>
 
@@ -922,26 +930,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="mt-2">
                                 <div class="d-flex justify-content-between">
                                     <span>Supervisor:</span>
-                                    <span>Carlos Rodríguez</span>
+                                    <span><?php echo htmlspecialchars($currentUser['nombre']); ?></span>
                                 </div>
                                 <div class="d-flex justify-content-between">
-                                    <span>Operador:</span>
-                                    <span>María González</span>
+                                    <span>Turno:</span>
+                                    <span id="display-turno"><?php 
+                                        $hora = date('H');
+                                        if ($hora >= 6 && $hora < 14) echo 'Matutino';
+                                        elseif ($hora >= 14 && $hora < 22) echo 'Vespertino';
+                                        else echo 'Nocturno';
+                                    ?></span>
                                 </div>
                                 <div class="d-flex justify-content-between">
-                                    <span>Calidad:</span>
-                                    <span>Pedro Hernández</span>
+                                    <span>Estado:</span>
+                                    <span id="display-estado" class="badge-status status-pending">Borrador</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Botones de Acción -->
                         <div class="d-grid gap-2">
-                            <button class="btn btn-success">
-                                <i class="fas fa-check-circle"></i> Confirmar Producción
+                            <button type="submit" class="btn btn-success" id="save-batch-btn" disabled>
+                                <i class="fas fa-save"></i> Guardar Lote
                             </button>
-                            <button class="btn btn-outline-secondary">
-                                <i class="fas fa-print"></i> Imprimir Etiquetas
+                            <button type="button" class="btn btn-outline-secondary" onclick="printLabels()">
+                                <i class="fas fa-print"></i> Vista Previa
                             </button>
                         </div>
                     </div>
@@ -1201,8 +1214,143 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             card.addEventListener('click', function() {
                 document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
                 this.classList.add('selected');
+                
+                // Actualizar tipo de producción
+                const tipo = this.dataset.type;
+                document.getElementById('tipo_produccion').value = tipo;
+                
+                // Actualizar unidad de medida según el tipo
+                const unidadSpan = document.getElementById('unidad_medida');
+                const displayUnidad = document.getElementById('display-unidad');
+                const displayUnidadCosto = document.getElementById('display-unidad-costo');
+                
+                let unidad = 'kg';
+                if (tipo === 'pieza') unidad = 'unid';
+                else if (tipo === 'paquete') unidad = 'cajas';
+                
+                unidadSpan.textContent = unidad;
+                displayUnidad.textContent = unidad;
+                displayUnidadCosto.textContent = unidad;
+                
+                updateBatchSummary();
             });
         });
+
+        // Actualizar resumen cuando cambian los campos
+        function updateBatchSummary() {
+            const productoSelect = document.getElementById('producto_id');
+            const cantidadInput = document.getElementById('cantidad_producida');
+            const fechaProdInput = document.getElementById('fecha_produccion');
+            const fechaCadInput = document.getElementById('fecha_vencimiento');
+            
+            // Actualizar producto
+            const productoOption = productoSelect.options[productoSelect.selectedIndex];
+            const nombreProducto = productoOption.dataset.nombre || 'No seleccionado';
+            const precioUnitario = parseFloat(productoOption.dataset.precio) || 0;
+            
+            document.getElementById('display-producto').textContent = nombreProducto;
+            
+            // Actualizar cantidad
+            const cantidad = parseFloat(cantidadInput.value) || 0;
+            document.getElementById('display-cantidad').textContent = cantidad;
+            
+            // Actualizar fechas
+            if (fechaProdInput.value) {
+                const fechaProd = new Date(fechaProdInput.value);
+                document.getElementById('display-fecha-prod').textContent = fechaProd.toLocaleDateString('es-ES');
+            }
+            
+            if (fechaCadInput.value) {
+                const fechaCad = new Date(fechaCadInput.value);
+                document.getElementById('display-fecha-cad').textContent = fechaCad.toLocaleDateString('es-ES');
+            } else {
+                document.getElementById('display-fecha-cad').textContent = 'No especificada';
+            }
+            
+            // Calcular costos estimados
+            if (cantidad > 0 && precioUnitario > 0) {
+                const costoMateriasPrimas = cantidad * precioUnitario * 0.6; // 60% del precio son materias primas
+                const costoManoObra = cantidad * 8; // $8 por unidad de mano de obra
+                const otrosCostos = cantidad * 2; // $2 por unidad otros costos
+                const costoTotal = costoMateriasPrimas + costoManoObra + otrosCostos;
+                const costoUnitario = costoTotal / cantidad;
+                
+                document.getElementById('display-costo-materias').textContent = '$' + costoMateriasPrimas.toFixed(2);
+                document.getElementById('display-costo-mano-obra').textContent = '$' + costoManoObra.toFixed(2);
+                document.getElementById('display-otros-costos').textContent = '$' + otrosCostos.toFixed(2);
+                document.getElementById('display-costo-total').textContent = '$' + costoTotal.toFixed(2);
+                document.getElementById('display-costo-unitario').textContent = '$' + costoUnitario.toFixed(2);
+            } else {
+                // Resetear costos
+                document.getElementById('display-costo-materias').textContent = '$0.00';
+                document.getElementById('display-costo-mano-obra').textContent = '$0.00';
+                document.getElementById('display-otros-costos').textContent = '$0.00';
+                document.getElementById('display-costo-total').textContent = '$0.00';
+                document.getElementById('display-costo-unitario').textContent = '$0.00';
+            }
+            
+            // Habilitar/deshabilitar botón de guardar
+            const saveBtn = document.getElementById('save-batch-btn');
+            const isValid = productoSelect.value && cantidad > 0 && fechaProdInput.value;
+            saveBtn.disabled = !isValid;
+            
+            if (isValid) {
+                document.getElementById('display-estado').textContent = 'Listo para guardar';
+                document.getElementById('display-estado').className = 'badge-status status-in-progress';
+            } else {
+                document.getElementById('display-estado').textContent = 'Borrador';
+                document.getElementById('display-estado').className = 'badge-status status-pending';
+            }
+        }
+        
+        // Event listeners para actualizar el resumen
+        document.getElementById('producto_id').addEventListener('change', updateBatchSummary);
+        document.getElementById('cantidad_producida').addEventListener('input', updateBatchSummary);
+        document.getElementById('fecha_produccion').addEventListener('change', updateBatchSummary);
+        document.getElementById('fecha_vencimiento').addEventListener('change', updateBatchSummary);
+        
+        // Función para imprimir etiquetas (vista previa)
+        function printLabels() {
+            const productoSelect = document.getElementById('producto_id');
+            const cantidad = document.getElementById('cantidad_producida').value;
+            const loteId = document.getElementById('display-lote-id').textContent;
+            
+            if (!productoSelect.value || !cantidad) {
+                alert('Por favor complete los datos del producto y cantidad antes de generar la vista previa.');
+                return;
+            }
+            
+            // Abrir ventana con vista previa de etiquetas
+            const ventana = window.open('', '_blank', 'width=800,height=600');
+            ventana.document.write(`
+                <html>
+                <head>
+                    <title>Vista Previa - Etiquetas de Lote</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        .etiqueta { border: 2px solid #333; padding: 15px; margin: 10px; width: 300px; display: inline-block; }
+                        .lote-id { font-size: 18px; font-weight: bold; }
+                        .producto { font-size: 16px; margin: 5px 0; }
+                        .fecha { font-size: 12px; color: #666; }
+                    </style>
+                </head>
+                <body>
+                    <h2>Vista Previa - Etiquetas de Lote</h2>
+                    <div class="etiqueta">
+                        <div class="lote-id">LOTE: ${loteId}</div>
+                        <div class="producto">${document.getElementById('display-producto').textContent}</div>
+                        <div>Cantidad: ${cantidad} ${document.getElementById('display-unidad').textContent}</div>
+                        <div class="fecha">Producción: ${document.getElementById('display-fecha-prod').textContent}</div>
+                        <div class="fecha">Vencimiento: ${document.getElementById('display-fecha-cad').textContent}</div>
+                    </div>
+                    <p><button onclick="window.print()">Imprimir</button> <button onclick="window.close()">Cerrar</button></p>
+                </body>
+                </html>
+            `);
+        }
+        
+        // Inicializar resumen
+        updateBatchSummary();
 
         // Step navigation simulation
         document.querySelectorAll('.step').forEach((step, index) => {
