@@ -40,6 +40,14 @@ class Production {
     }
     
     /**
+     * Obtiene un lote por número de lote
+     */
+    public function getByNumber($numero_lote) {
+        $sql = "SELECT * FROM produccion WHERE numero_lote = ?";
+        return $this->db->queryOne($sql, [$numero_lote]);
+    }
+    
+    /**
      * Obtiene un lote por ID
      */
     public function getById($id) {
@@ -136,5 +144,33 @@ class Production {
                 ORDER BY p.fecha_produccion DESC
                 LIMIT ?";
         return $this->db->query($sql, [$limit]);
+    }
+    
+    /**
+     * Inicia una transacción
+     */
+    public function beginTransaction() {
+        return $this->db->beginTransaction();
+    }
+    
+    /**
+     * Confirma una transacción
+     */
+    public function commit() {
+        return $this->db->commit();
+    }
+    
+    /**
+     * Revierte una transacción
+     */
+    public function rollback() {
+        return $this->db->rollback();
+    }
+    
+    /**
+     * Verifica si hay una transacción activa
+     */
+    public function inTransaction() {
+        return $this->db->getConnection()->inTransaction();
     }
 }

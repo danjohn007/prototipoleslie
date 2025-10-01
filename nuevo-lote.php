@@ -19,6 +19,10 @@ $currentUser = $userModel->getCurrentUser();
 $productModel = new Product();
 $products = $productModel->getAll();
 
+// Obtener ingredientes activos
+$ingredientModel = new Ingredient();
+$ingredients = $ingredientModel->getAll(['activo' => 1]);
+
 // Generar número de lote
 $numero_lote = generate_batch_number('LOTE');
 
@@ -444,12 +448,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         .ingredient-item {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
-            padding: 10px;
+            padding: 15px;
             border: 1px solid var(--medium-gray);
             border-radius: 6px;
             margin-bottom: 10px;
+            background-color: white;
+            position: relative;
+        }
+        
+        .ingredient-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+            padding: 15px;
+            border: 2px dashed var(--medium-gray);
+            border-radius: 6px;
+            margin-bottom: 10px;
+            background-color: #f8f9fa;
+        }
+        
+        .ingredient-remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 10px;
+            cursor: pointer;
         }
         
         .step-indicator {
@@ -817,37 +849,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <!-- Ingredientes -->
                         <div class="form-section">
                             <h6 class="mb-3">Ingredientes Utilizados</h6>
-                            <div class="ingredient-item">
-                                <div class="flex-grow-1">
-                                    <strong>Leche Entera</strong>
-                                    <div class="text-muted small">Lote #LT-231114</div>
-                                </div>
-                                <div class="text-end">
-                                    <strong>500 L</strong>
-                                    <div class="text-muted small">$1,250.00</div>
-                                </div>
+                            <div id="ingredientes-container">
+                                <!-- Los ingredientes se agregarán dinámicamente aquí -->
                             </div>
-                            <div class="ingredient-item">
-                                <div class="flex-grow-1">
-                                    <strong>Cuajo</strong>
-                                    <div class="text-muted small">Lote #CJ-231110</div>
-                                </div>
-                                <div class="text-end">
-                                    <strong>2 L</strong>
-                                    <div class="text-muted small">$180.00</div>
-                                </div>
-                            </div>
-                            <div class="ingredient-item">
-                                <div class="flex-grow-1">
-                                    <strong>Sal</strong>
-                                    <div class="text-muted small">Lote #SL-231108</div>
-                                </div>
-                                <div class="text-end">
-                                    <strong>5 kg</strong>
-                                    <div class="text-muted small">$75.00</div>
-                                </div>
-                            </div>
-                            <button class="btn btn-outline-primary btn-sm mt-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="add-ingredient-btn">
                                 <i class="fas fa-plus"></i> Agregar Ingrediente
                             </button>
                         </div>
@@ -1301,12 +1306,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 document.getElementById('display-estado').textContent = 'Borrador';
                 document.getElementById('display-estado').className = 'badge-status status-pending';
             }
+            
+            // Actualizar pasos dinámicos
+            updateSteps();
         }
         
-        // Event listeners para actualizar el resumen
-        document.getElementById('producto_id').addEventListener('change', updateBatchSummary);
-        document.getElementById('cantidad_producida').addEventListener('input', updateBatchSummary);
-        document.getElementById('fecha_produccion').addEventListener('change', updateBatchSummary);
+        // Event listeners para actualizar el resumen y pasos
+        document.getElementById('producto_id').addEventListener('change', function() {
+            updateBatchSummary();
+            updateSteps();
+        });
+        document.getElementById('cantidad_producida').addEventListener('input', function() {
+            updateBatchSummary();
+            updateSteps();
+        });
+        document.getElementById('fecha_produccion').addEventListener('change', function() {
+            updateBatchSummary();
+            updateSteps();
+        });
         document.getElementById('fecha_vencimiento').addEventListener('change', updateBatchSummary);
         
         // Función para imprimir etiquetas (vista previa)
@@ -1351,6 +1368,134 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Inicializar resumen
         updateBatchSummary();
+        
+        // ============================================
+        // GESTIÓN DE INGREDIENTES
+        // ============================================
+        
+        // Ingredientes disponibles (cargar desde PHP)
+        const availableIngredients = <?php echo json_encode($ingredients); ?>;
+        let ingredientCounter = 0;
+        
+        // Agregar ingrediente
+        document.getElementById('add-ingredient-btn').addEventListener('click', function() {
+            addIngredientForm();
+        });
+        
+        function addIngredientForm() {
+            const container = document.getElementById('ingredientes-container');
+            const ingredientDiv = document.createElement('div');
+            ingredientDiv.className = 'ingredient-form';
+            ingredientDiv.id = `ingredient-${ingredientCounter}`;
+            
+            ingredientDiv.innerHTML = `
+                <div>
+                    <label class="form-label">Ingrediente</label>
+                    <select class="form-select" name="ingredientes[${ingredientCounter}][ingrediente_id]" onchange="updateIngredientInfo(${ingredientCounter})">
+                        <option value="">Seleccionar ingrediente...</option>
+                        ${availableIngredients.map(ing => 
+                            `<option value="${ing.id}" data-unidad="${ing.unidad_medida}" data-costo="${ing.costo_unitario}">${ing.nombre}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Cantidad</label>
+                    <input type="number" class="form-control" name="ingredientes[${ingredientCounter}][cantidad]" 
+                           step="0.01" min="0" placeholder="0" onchange="updateIngredientCost(${ingredientCounter})">
+                </div>
+                <div>
+                    <label class="form-label">Unidad</label>
+                    <input type="text" class="form-control" id="unidad-${ingredientCounter}" readonly placeholder="--">
+                </div>
+                <div>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeIngredient(${ingredientCounter})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="col-12">
+                    <small class="text-muted">Costo estimado: $<span id="costo-${ingredientCounter}">0.00</span></small>
+                </div>
+            `;
+            
+            container.appendChild(ingredientDiv);
+            ingredientCounter++;
+            updateSteps();
+        }
+        
+        function updateIngredientInfo(index) {
+            const select = document.querySelector(`select[name="ingredientes[${index}][ingrediente_id]"]`);
+            const option = select.options[select.selectedIndex];
+            const unidadInput = document.getElementById(`unidad-${index}`);
+            
+            if (option.value) {
+                unidadInput.value = option.dataset.unidad || 'kg';
+                updateIngredientCost(index);
+            } else {
+                unidadInput.value = '';
+                document.getElementById(`costo-${index}`).textContent = '0.00';
+            }
+        }
+        
+        function updateIngredientCost(index) {
+            const select = document.querySelector(`select[name="ingredientes[${index}][ingrediente_id]"]`);
+            const cantidadInput = document.querySelector(`input[name="ingredientes[${index}][cantidad]"]`);
+            const costoSpan = document.getElementById(`costo-${index}`);
+            
+            const option = select.options[select.selectedIndex];
+            const cantidad = parseFloat(cantidadInput.value) || 0;
+            const costoUnitario = parseFloat(option.dataset.costo) || 0;
+            
+            const costoTotal = cantidad * costoUnitario;
+            costoSpan.textContent = costoTotal.toFixed(2);
+        }
+        
+        function removeIngredient(index) {
+            const ingredientDiv = document.getElementById(`ingredient-${index}`);
+            if (ingredientDiv) {
+                ingredientDiv.remove();
+                updateSteps();
+            }
+        }
+        
+        // ============================================
+        // GESTIÓN DE PASOS DINÁMICOS
+        // ============================================
+        
+        function updateSteps() {
+            const productoSelect = document.getElementById('producto_id');
+            const cantidadInput = document.getElementById('cantidad_producida');
+            const fechaProdInput = document.getElementById('fecha_produccion');
+            const ingredientes = document.querySelectorAll('#ingredientes-container .ingredient-form');
+            
+            const steps = document.querySelectorAll('.step');
+            
+            // Paso 1: Información básica
+            if (productoSelect.value && cantidadInput.value && fechaProdInput.value) {
+                steps[0].classList.add('completed');
+                steps[0].classList.remove('active');
+            } else {
+                steps[0].classList.add('active');
+                steps[0].classList.remove('completed');
+            }
+            
+            // Paso 2: Ingredientes
+            if (steps[0].classList.contains('completed') && ingredientes.length > 0) {
+                steps[1].classList.add('completed');
+                steps[1].classList.remove('active');
+            } else if (steps[0].classList.contains('completed')) {
+                steps[1].classList.add('active');
+                steps[1].classList.remove('completed');
+            } else {
+                steps[1].classList.remove('active', 'completed');
+            }
+            
+            // Paso 3: Revisión final
+            if (steps[1].classList.contains('completed')) {
+                steps[2].classList.add('active');
+            } else {
+                steps[2].classList.remove('active', 'completed');
+            }
+        }
 
         // Step navigation simulation
         document.querySelectorAll('.step').forEach((step, index) => {
