@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Experiencia del Cliente - Quesos Leslie</title>
+    <title>Nuevo Cliente - Quesos Leslie</title>
     <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@300;400;500&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -271,19 +271,32 @@
             }
         }
         
-        .rating-stars {
-            color: var(--education);
-            font-size: 18px;
+        .user-table {
+            width: 100%;
+            font-size: 14px;
         }
         
-        .feedback-card {
-            padding: 15px;
-            border-left: 4px solid var(--human-rights);
-            background-color: rgba(52, 152, 219, 0.05);
-            margin-bottom: 15px;
+        .user-table th {
+            text-align: left;
+            padding: 10px;
+            background-color: var(--light-gray);
+            font-weight: 500;
+            color: var(--dark-gray);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
         }
         
-        .sentiment-badge {
+        .user-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .user-table tr:hover {
+            background-color: var(--light-gray);
+        }
+        
+        .client-status {
             display: inline-block;
             padding: 4px 12px;
             border-radius: 12px;
@@ -292,19 +305,37 @@
             text-transform: uppercase;
         }
         
-        .sentiment-positive {
+        .client-status.activo {
             background-color: rgba(39, 174, 96, 0.1);
             color: var(--success);
         }
         
-        .sentiment-neutral {
-            background-color: rgba(255, 193, 7, 0.1);
-            color: var(--warning);
-        }
-        
-        .sentiment-negative {
+        .client-status.inactivo {
             background-color: rgba(220, 53, 69, 0.1);
             color: var(--danger);
+        }
+        
+        .client-tier {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .client-tier.oro {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #856404;
+        }
+        
+        .client-tier.plata {
+            background-color: rgba(108, 117, 125, 0.2);
+            color: #495057;
+        }
+        
+        .client-tier.bronce {
+            background-color: rgba(230, 126, 34, 0.2);
+            color: #d35400;
         }
     </style>
 </head>
@@ -321,7 +352,7 @@
     <div class="sidebar">
         <div class="brand-header">
             <div class="brand-title">QUESOS LESLIE</div>
-            <div class="brand-subtitle">EXPERIENCIA</div>
+            <div class="brand-subtitle">CLIENTES</div>
         </div>
         
                 <!-- MÓDULOS DEL SISTEMA -->
@@ -414,13 +445,13 @@
     <!-- Main Content Area -->
     <div class="main-content">
         <div class="page-header">
-            <h1 class="page-title">Experiencia del Cliente</h1>
+            <h1 class="page-title">Nuevo Cliente</h1>
             <div>
                 <button class="btn btn-primary me-2">
-                    <i class="fas fa-envelope"></i> Enviar Encuesta
+                    <i class="fas fa-save"></i> Guardar Cliente
                 </button>
-                <button class="btn btn-success">
-                    <i class="fas fa-file-export"></i> Exportar Reporte
+                <button class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
                 </button>
             </div>
         </div>
@@ -429,129 +460,137 @@
         <div class="row">
             <div class="col-md-3">
                 <div class="card kpi-card">
-                    <div class="kpi-label">Satisfacción General</div>
-                    <div class="kpi-value" style="color: var(--success);">4.7/5</div>
+                    <div class="kpi-label">Total Clientes</div>
+                    <div class="kpi-value" style="color: var(--human-rights);">234</div>
                     <div class="kpi-trend up">
-                        <i class="fas fa-arrow-up"></i> 0.2 puntos más vs mes pasado
+                        <i class="fas fa-arrow-up"></i> 12 nuevos este mes
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card kpi-card">
-                    <div class="kpi-label">NPS Score</div>
-                    <div class="kpi-value" style="color: var(--human-rights);">72</div>
+                    <div class="kpi-label">Clientes Activos</div>
+                    <div class="kpi-value" style="color: var(--success);">198</div>
                     <div class="kpi-trend up">
-                        <i class="fas fa-arrow-up"></i> 5 puntos más
+                        <i class="fas fa-arrow-up"></i> 85% del total
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card kpi-card">
-                    <div class="kpi-label">Encuestas Este Mes</div>
-                    <div class="kpi-value" style="color: var(--equity);">156</div>
+                    <div class="kpi-label">Ticket Promedio</div>
+                    <div class="kpi-value" style="color: var(--education);">$1,450</div>
                     <div class="kpi-trend up">
-                        <i class="fas fa-arrow-up"></i> 23% más vs mes pasado
+                        <i class="fas fa-arrow-up"></i> 8% más vs mes pasado
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card kpi-card">
-                    <div class="kpi-label">Tiempo Respuesta Promedio</div>
-                    <div class="kpi-value" style="color: var(--environment);">4.2h</div>
-                    <div class="kpi-trend down">
-                        <i class="fas fa-arrow-down"></i> 1.5h menos
+                    <div class="kpi-label">Tasa de Retención</div>
+                    <div class="kpi-value" style="color: var(--environment);">92%</div>
+                    <div class="kpi-trend up">
+                        <i class="fas fa-arrow-up"></i> 3% más
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Feedback Reciente -->
+        <!-- Clientes y Segmentación -->
         <div class="row">
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title">Feedback Reciente de Clientes</div>
+                        <div class="card-title">Lista de Clientes</div>
                         <div>
-                            <select class="form-select form-select-sm" style="width: 150px;">
-                                <option>Todos</option>
-                                <option>Positivo</option>
-                                <option>Neutral</option>
-                                <option>Negativo</option>
-                            </select>
+                            <input type="text" class="form-control form-control-sm" placeholder="Buscar cliente..." style="width: 250px;">
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="feedback-card">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h6 class="mb-1">Supermercado La Esperanza</h6>
-                                    <div class="rating-stars mb-1">
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                    </div>
-                                </div>
-                                <span class="sentiment-badge sentiment-positive">Positivo</span>
-                            </div>
-                            <p class="mb-2">"Excelente calidad de productos y entrega siempre puntual. Los quesos frescos son los mejores de la zona."</p>
-                            <small class="text-muted">Hace 2 horas</small>
-                        </div>
-                        
-                        <div class="feedback-card">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h6 class="mb-1">Tienda Don Pepe</h6>
-                                    <div class="rating-stars mb-1">
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="far fa-star"></i>
-                                    </div>
-                                </div>
-                                <span class="sentiment-badge sentiment-positive">Positivo</span>
-                            </div>
-                            <p class="mb-2">"Buenos productos, aunque me gustaría tener más variedad en presentaciones pequeñas."</p>
-                            <small class="text-muted">Hace 5 horas</small>
-                        </div>
-                        
-                        <div class="feedback-card" style="border-left-color: var(--warning);">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h6 class="mb-1">Minimarket El Trébol</h6>
-                                    <div class="rating-stars mb-1">
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="far fa-star"></i>
-                                        <i class="far fa-star"></i>
-                                    </div>
-                                </div>
-                                <span class="sentiment-badge sentiment-neutral">Neutral</span>
-                            </div>
-                            <p class="mb-2">"La calidad es buena pero tuvieron un retraso en la entrega de esta semana."</p>
-                            <small class="text-muted">Hace 1 día</small>
-                        </div>
-                        
-                        <div class="feedback-card" style="border-left-color: var(--success);">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h6 class="mb-1">Bodega Central</h6>
-                                    <div class="rating-stars mb-1">
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                    </div>
-                                </div>
-                                <span class="sentiment-badge sentiment-positive">Positivo</span>
-                            </div>
-                            <p class="mb-2">"Mis clientes están muy contentos con los quesos. La relación calidad-precio es excelente."</p>
-                            <small class="text-muted">Hace 1 día</small>
-                        </div>
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Contacto</th>
+                                    <th>Tipo</th>
+                                    <th>Última Compra</th>
+                                    <th>Total Compras</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <strong>Supermercado La Esperanza</strong><br>
+                                        <small class="text-muted">RUC: 20123456789</small>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-phone text-muted me-1"></i> 999-888-777<br>
+                                        <i class="fas fa-envelope text-muted me-1"></i> <small>contacto@laesperanza.com</small>
+                                    </td>
+                                    <td><span class="client-tier oro">Oro</span></td>
+                                    <td>14/01/2024</td>
+                                    <td class="fw-bold">$12,450</td>
+                                    <td><span class="client-status activo">Activo</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Tienda Don Pepe</strong><br>
+                                        <small class="text-muted">RUC: 20987654321</small>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-phone text-muted me-1"></i> 987-654-321<br>
+                                        <i class="fas fa-envelope text-muted me-1"></i> <small>donpepe@email.com</small>
+                                    </td>
+                                    <td><span class="client-tier plata">Plata</span></td>
+                                    <td>12/01/2024</td>
+                                    <td class="fw-bold">$8,230</td>
+                                    <td><span class="client-status activo">Activo</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Minimarket El Trébol</strong><br>
+                                        <small class="text-muted">RUC: 20456789123</small>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-phone text-muted me-1"></i> 965-432-198<br>
+                                        <i class="fas fa-envelope text-muted me-1"></i> <small>eltrebol@gmail.com</small>
+                                    </td>
+                                    <td><span class="client-tier bronce">Bronce</span></td>
+                                    <td>10/01/2024</td>
+                                    <td class="fw-bold">$5,120</td>
+                                    <td><span class="client-status activo">Activo</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Bodega Central</strong><br>
+                                        <small class="text-muted">RUC: 20789456123</small>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-phone text-muted me-1"></i> 912-345-678<br>
+                                        <i class="fas fa-envelope text-muted me-1"></i> <small>bodegacentral@email.com</small>
+                                    </td>
+                                    <td><span class="client-tier plata">Plata</span></td>
+                                    <td>15/01/2024</td>
+                                    <td class="fw-bold">$7,890</td>
+                                    <td><span class="client-status activo">Activo</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Supermercado Norte</strong><br>
+                                        <small class="text-muted">RUC: 20321654987</small>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-phone text-muted me-1"></i> 934-567-890<br>
+                                        <i class="fas fa-envelope text-muted me-1"></i> <small>supernorte@empresa.com</small>
+                                    </td>
+                                    <td><span class="client-tier oro">Oro</span></td>
+                                    <td>13/01/2024</td>
+                                    <td class="fw-bold">$15,670</td>
+                                    <td><span class="client-status activo">Activo</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -559,36 +598,36 @@
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title">Distribución de Sentimientos</div>
+                        <div class="card-title">Segmentación de Clientes</div>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
                             <div class="d-flex justify-content-between mb-1">
-                                <small>😊 Positivo</small>
-                                <small class="fw-bold">78%</small>
+                                <small>🥇 Clientes Oro</small>
+                                <small class="fw-bold">45 (19%)</small>
                             </div>
                             <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-success" style="width: 78%"></div>
+                                <div class="progress-bar" style="width: 19%; background-color: #f39c12;"></div>
                             </div>
                         </div>
                         
                         <div class="mb-3">
                             <div class="d-flex justify-content-between mb-1">
-                                <small>😐 Neutral</small>
-                                <small class="fw-bold">15%</small>
+                                <small>🥈 Clientes Plata</small>
+                                <small class="fw-bold">89 (38%)</small>
                             </div>
                             <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-warning" style="width: 15%"></div>
+                                <div class="progress-bar bg-secondary" style="width: 38%"></div>
                             </div>
                         </div>
                         
                         <div>
                             <div class="d-flex justify-content-between mb-1">
-                                <small>😞 Negativo</small>
-                                <small class="fw-bold">7%</small>
+                                <small>🥉 Clientes Bronce</small>
+                                <small class="fw-bold">100 (43%)</small>
                             </div>
                             <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-danger" style="width: 7%"></div>
+                                <div class="progress-bar" style="width: 43%; background-color: #e67e22;"></div>
                             </div>
                         </div>
                     </div>
@@ -596,46 +635,46 @@
                 
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title">Aspectos Mejor Valorados</div>
+                        <div class="card-title">Distribución Geográfica</div>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <div class="d-flex align-items-center mb-1">
-                                <i class="fas fa-check-circle text-success me-2"></i>
-                                <small>Calidad del Producto</small>
+                            <div class="d-flex justify-content-between mb-1">
+                                <small>Zona Norte</small>
+                                <small class="fw-bold">82 clientes</small>
                             </div>
                             <div class="progress" style="height: 6px;">
-                                <div class="progress-bar bg-success" style="width: 95%"></div>
+                                <div class="progress-bar bg-info" style="width: 35%"></div>
                             </div>
                         </div>
                         
                         <div class="mb-3">
-                            <div class="d-flex align-items-center mb-1">
-                                <i class="fas fa-check-circle text-success me-2"></i>
-                                <small>Atención al Cliente</small>
+                            <div class="d-flex justify-content-between mb-1">
+                                <small>Zona Centro</small>
+                                <small class="fw-bold">68 clientes</small>
                             </div>
                             <div class="progress" style="height: 6px;">
-                                <div class="progress-bar bg-success" style="width: 88%"></div>
+                                <div class="progress-bar bg-primary" style="width: 29%"></div>
                             </div>
                         </div>
                         
                         <div class="mb-3">
-                            <div class="d-flex align-items-center mb-1">
-                                <i class="fas fa-check-circle text-success me-2"></i>
-                                <small>Puntualidad</small>
+                            <div class="d-flex justify-content-between mb-1">
+                                <small>Zona Sur</small>
+                                <small class="fw-bold">54 clientes</small>
                             </div>
                             <div class="progress" style="height: 6px;">
-                                <div class="progress-bar bg-success" style="width: 82%"></div>
+                                <div class="progress-bar bg-success" style="width: 23%"></div>
                             </div>
                         </div>
                         
                         <div>
-                            <div class="d-flex align-items-center mb-1">
-                                <i class="fas fa-check-circle text-success me-2"></i>
-                                <small>Precio</small>
+                            <div class="d-flex justify-content-between mb-1">
+                                <small>Otras Zonas</small>
+                                <small class="fw-bold">30 clientes</small>
                             </div>
                             <div class="progress" style="height: 6px;">
-                                <div class="progress-bar bg-success" style="width: 75%"></div>
+                                <div class="progress-bar bg-warning" style="width: 13%"></div>
                             </div>
                         </div>
                     </div>
@@ -643,19 +682,18 @@
                 
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title">Áreas de Mejora</div>
+                        <div class="card-title">Acciones Rápidas</div>
                     </div>
                     <div class="card-body">
-                        <div class="alert alert-warning mb-2 small">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>Variedad de productos</strong>
-                            <p class="mb-0 mt-1">15 clientes solicitaron más opciones</p>
-                        </div>
-                        <div class="alert alert-info mb-0 small">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>Horarios de entrega</strong>
-                            <p class="mb-0 mt-1">8 clientes pidieron flexibilidad</p>
-                        </div>
+                        <button class="btn btn-outline-primary w-100 mb-2">
+                            <i class="fas fa-envelope me-2"></i>Enviar Comunicado Masivo
+                        </button>
+                        <button class="btn btn-outline-success w-100 mb-2">
+                            <i class="fas fa-gift me-2"></i>Crear Promoción
+                        </button>
+                        <button class="btn btn-outline-info w-100">
+                            <i class="fas fa-chart-line me-2"></i>Analizar Comportamiento
+                        </button>
                     </div>
                 </div>
             </div>
