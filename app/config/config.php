@@ -13,8 +13,8 @@ if (session_status() == PHP_SESSION_NONE) {
 // CONFIGURACIÓN DE BASE DE DATOS
 // ============================================
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'talentos_leslie');
-define('DB_USER', 'talentos_leslie');
+define('DB_NAME', 'quesos_leslie');
+define('DB_USER', 'quesos_leslie');
 define('DB_PASS', 'Danjohn007!');
 define('DB_CHARSET', 'utf8mb4');
 
