@@ -1,0 +1,43 @@
+# IDE and Editor files
+.vscode/
+.idea/
+*.sublime-*
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# PHP
+*.log
+vendor/
+composer.phar
+composer.lock
+
+# Configuration (optional, remove if you want to track config)
+# app/config/config.php
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Cache
+cache/
+*.cache
+
+# Uploaded files (if you implement file uploads)
+uploads/
+public/uploads/
+
+# Node modules (if you add Node.js tools)
+node_modules/
+package-lock.json
+
+# Environment variables
+.env
+.env.local
+.env.*.local

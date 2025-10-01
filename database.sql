@@ -249,10 +249,10 @@ CREATE TABLE IF NOT EXISTS transacciones (
 
 -- Usuarios de ejemplo (password: admin123)
 INSERT INTO usuarios (nombre, email, password, rol) VALUES
-('Leslie Lugo', 'leslie@quesosleslie.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin'),
-('Juan Pérez', 'juan@quesosleslie.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'operador'),
-('María García', 'maria@quesosleslie.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'vendedor'),
-('Carlos Rodríguez', 'carlos@quesosleslie.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'logistica');
+('Leslie Lugo', 'leslie@quesosleslie.com', '$2y$10$8aWoSlCeVfRVlP/L3maWKOQSrvBq1TfjJ59rRJPimyAss92eb2Pne', 'admin'),
+('Juan Pérez', 'juan@quesosleslie.com', '$2y$10$8aWoSlCeVfRVlP/L3maWKOQSrvBq1TfjJ59rRJPimyAss92eb2Pne', 'operador'),
+('María García', 'maria@quesosleslie.com', '$2y$10$8aWoSlCeVfRVlP/L3maWKOQSrvBq1TfjJ59rRJPimyAss92eb2Pne', 'vendedor'),
+('Carlos Rodríguez', 'carlos@quesosleslie.com', '$2y$10$8aWoSlCeVfRVlP/L3maWKOQSrvBq1TfjJ59rRJPimyAss92eb2Pne', 'logistica');
 
 -- Productos de ejemplo
 INSERT INTO productos (nombre, descripcion, categoria, precio_unitario, stock_actual, stock_minimo) VALUES
